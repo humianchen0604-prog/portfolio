@@ -2,8 +2,8 @@
 
 ## Projects
 
-- `papa/`: **Papá o la Papa**, a voice-to-watercolor phone prototype (say "Dad"
-  in Spanish; "el Papa", "la papa" and "papá" paint the Pope, a potato or Dad).
+- `papa/`: **Papá o la papa**, a voice-to-watercolor phone prototype (say "Dad"
+  in Spanish; "el papa", "la papa" and "papá" paint the Pope, a potato or Dad).
   Read `papa/CLAUDE.md` before changing it: it records the design decisions the
   user asked for and the directions they rejected.
 
