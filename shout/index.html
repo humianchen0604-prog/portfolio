@@ -1,0 +1,537 @@
+<meta charset="utf-8">
+<title>Reply, Shouted</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a contact sheet of ten Figma "F3 · Reply" phones (402 × 874 design units), all driven by one voice. */
+:root {
+  --page: #0b090a;        /* gallery ground, warm near-black */
+  --panel: #161213;       /* control bar */
+  --line: #2a2324;        /* hairlines */
+  --ink: #fff8ee;         /* Figma text colour */
+  --muted: rgba(255, 248, 238, .56);
+  --heat: #ff6a2b;        /* from the heat floor */
+  --screen: #050304;      /* Figma phone background */
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { background: var(--page); color: var(--ink); }
+body { font: 15px/1.5 var(--sans); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--heat); outline-offset: 3px; }
+
+/* ---------- gallery chrome ---------- */
+.top { max-width: 1240px; margin: 0 auto 28px; display: grid; gap: 18px; }
+.top h1 { margin: 0; font-weight: 800; font-size: clamp(40px, 7vw, 76px); line-height: .9; letter-spacing: -.045em; text-wrap: balance; }
+.top h1 span { font-weight: 200; letter-spacing: -.03em; }
+.top p { margin: 0; color: var(--muted); max-width: 60ch; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--page); border: 1px solid var(--line); }
+.seg button, .act { border: 0; background: transparent; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--page); font-weight: 600; }
+.act { border: 1px solid var(--line); }
+.act:hover, .seg button:hover:not([aria-pressed="true"]) { background: rgba(255, 248, 238, .08); }
+.meter { display: flex; align-items: center; gap: 10px; margin-left: auto; font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.meter .track { width: 120px; height: 6px; border-radius: 3px; background: var(--page); border: 1px solid var(--line); overflow: hidden; }
+.meter .fill { height: 100%; width: calc(var(--live, 0) * 100%); background: linear-gradient(90deg, #8d6bff, var(--heat) 60%, #ffd18a); }
+.status { font: 12px var(--mono); color: var(--muted); }
+.status b { color: var(--ink); font-weight: 500; }
+.note { font-size: 13px; color: var(--muted); }
+.note.err { color: #ffb08a; }
+
+.grid { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 28px 20px; }
+@media (max-width: 460px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; } }
+figure { margin: 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+figcaption { display: grid; gap: 2px; min-width: 0; }
+figcaption .num { font: 11px var(--mono); color: var(--heat); letter-spacing: .08em; }
+figcaption b { font-weight: 650; font-size: 16px; letter-spacing: -.01em; }
+figcaption span:last-child { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.slot { position: relative; aspect-ratio: 402 / 874; max-width: 100%; }
+
+/* ---------- the phone (Figma 91:4878 / 91:4862) ---------- */
+.phone { position: absolute; inset: 0; container-type: inline-size; cursor: zoom-in; border-radius: 10.9% / 5%; }
+.screen { --u: calc(100cqw / 402); --live: 0; position: absolute; inset: 0; overflow: hidden; background: var(--screen); border-radius: calc(44 * var(--u)); box-shadow: 0 0 0 1px #1d1819; }
+.heat { position: absolute; left: calc(-110 * var(--u)); top: calc(740 * var(--u)); width: calc(622 * var(--u)); height: calc(300 * var(--u)); pointer-events: none;
+  background:
+    radial-gradient(34% 42% at 22% 46%, rgba(120, 86, 255, .55), transparent 72%),
+    radial-gradient(40% 46% at 48% 52%, rgba(214, 52, 22, .62), transparent 74%),
+    radial-gradient(34% 40% at 76% 56%, rgba(255, 120, 40, .32), transparent 72%);
+  filter: blur(calc(18 * var(--u)));
+  transform-origin: 50% 70%;
+  transform: scaleY(calc(1 + var(--live) * 1.4)); opacity: calc(.8 + var(--live) * .2); }
+.cast { position: absolute; top: calc(50 * var(--u)); left: 50%; translate: -50% 0; display: flex; align-items: center; gap: calc(16 * var(--u)); }
+.cast img { display: block; border-radius: 50%; }
+.cast .side { width: calc(32 * var(--u)); height: calc(32 * var(--u)); opacity: .4; }
+.cast .main { width: calc(44 * var(--u)); height: calc(44 * var(--u)); box-shadow: 0 0 calc(14 * var(--u)) rgba(255, 90, 30, .35); }
+.who { position: absolute; top: calc(106 * var(--u)); left: 50%; translate: -50% 0; font: 600 calc(9.5 * var(--u))/1 var(--sans); letter-spacing: .01em; color: var(--ink); opacity: .9; white-space: nowrap; }
+.stage { position: absolute; left: calc(30 * var(--u)); width: calc(342 * var(--u)); top: calc(130 * var(--u)); height: calc(460 * var(--u)); display: flex; align-items: center; justify-content: center; }
+.line { margin: 0; width: 100%; text-align: center; font: 300 calc(36 * var(--u))/1.2 var(--sans); letter-spacing: -.025em; color: var(--ink); transition: opacity .32s ease; transform-origin: 50% 50%; }
+.line.out { opacity: 0; }
+.w { display: inline-block; color: rgba(255, 248, 238, .18); transition: color .2s ease, opacity .2s ease; }
+.w.on { color: var(--ink); }
+.fx { position: absolute; inset: 0; pointer-events: none; }
+.dock { position: absolute; top: calc(764 * var(--u)); left: calc(132 * var(--u)); display: flex; gap: calc(22 * var(--u)); }
+.dock span { width: calc(58 * var(--u)); height: calc(58 * var(--u)); box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; color: #fff;
+  background: rgba(255, 255, 255, .1); border: 1px solid rgba(64, 64, 64, .5); backdrop-filter: blur(calc(7.5 * var(--u))); box-shadow: -1px 3px 6px rgba(0, 0, 0, .08); }
+.dock svg { width: calc(22 * var(--u)); height: calc(22 * var(--u)); }
+.dock span + span svg { width: calc(20 * var(--u)); height: calc(20 * var(--u)); }
+body.mic .dock span:first-child { background: rgba(255, 106, 43, .22); box-shadow: 0 0 0 calc(var(--live) * 12 * var(--u)) rgba(255, 106, 43, .22); }
+
+/* Shared emphasis: --e is loudness shaped 0..1, --fit shrinks a word that would leave the frame. */
+.w.on { --fs: 1; font-size: calc(36 * var(--u) * var(--fs) * var(--fit, 1)); }
+@keyframes pop { from { transform: scale(.55); opacity: .15; } }
+
+/* 01 Swell */
+[data-v="swell"] .w.on { --fs: calc(1 + var(--e) * 1.1); font-weight: calc(300 + var(--e) * 600); letter-spacing: calc(-.025em - var(--e) * .03em); animation: pop .45s cubic-bezier(.2, 1.6, .4, 1); }
+
+/* 02 Sideways */
+@keyframes turn { from { rotate: var(--from, 0deg); } }
+[data-v="sideways"] .w.on { --fs: calc(1 + var(--e) * .45); font-weight: calc(300 + var(--e) * 500); rotate: var(--tilt, 0deg); animation: turn .5s cubic-bezier(.3, 1.6, .5, 1); }
+[data-v="sideways"] .w.on.side { --fs: calc(1 + var(--e) * .75); writing-mode: vertical-rl; vertical-align: middle; font-weight: 820; line-height: 1; padding: .08em 0; }
+
+/* 03 Poster */
+@keyframes slide { from { transform: translateX(calc(var(--dir, 1) * -30 * var(--u))); opacity: 0; } }
+[data-v="poster"] .stage { align-items: flex-start; top: calc(138 * var(--u)); height: calc(600 * var(--u)); }
+[data-v="poster"] .line { text-align: left; line-height: 1.05; transform-origin: 50% 0; }
+[data-v="poster"] .w { display: none; }
+[data-v="poster"] .w.on { display: inline-block; --fs: calc(.75 + var(--e) * .6); font-weight: calc(350 + var(--e) * 550); animation: slide .35s cubic-bezier(.2, .9, .3, 1); }
+[data-v="poster"] .w.on.big { display: block; width: fit-content; font-size: calc(var(--px) * var(--u)); text-transform: uppercase; line-height: .9; letter-spacing: -.045em; }
+[data-v="poster"] .w.on.big.right { margin-left: auto; --dir: -1; }
+
+/* 04 Quake */
+[data-v="quake"] .w.on { --fs: calc(1 + var(--e) * .45); font-weight: calc(300 + var(--e) * 600); }
+[data-v="quake"] .w.on.loud { text-transform: uppercase; }
+
+/* 05 Slam */
+@keyframes slam {
+  0% { transform: translateY(calc((-140 - var(--e) * 220) * var(--u))) scale(calc(1.6 + var(--e) * 1.8)); opacity: 0; }
+  60% { opacity: 1; }
+  72% { transform: scale(calc(1 + var(--e) * .4), calc(1 - var(--e) * .38)); }
+  86% { transform: scale(calc(1 - var(--e) * .08), calc(1 + var(--e) * .1)); }
+  100% { transform: none; }
+}
+[data-v="slam"] .w { opacity: 0; }
+[data-v="slam"] .w.on { opacity: 1; --fs: calc(1 + var(--e) * .8); font-weight: calc(400 + var(--e) * 500); transform-origin: 50% 90%; animation: slam calc(.42s + var(--e) * .18s) cubic-bezier(.55, 0, .7, 1) both; }
+[data-v="slam"] .w.on.loud { text-transform: uppercase; letter-spacing: -.04em; }
+
+/* 06 Heat */
+[data-v="heat"] .w.on { --fs: calc(1 + var(--e) * .35); font-weight: calc(300 + var(--e) * 450);
+  color: hsl(calc(40 - var(--e) * 30) 100% calc(96% - var(--e) * 40%));
+  text-shadow: 0 0 calc(var(--e) * 16 * var(--u) * (.6 + var(--live))) hsl(calc(32 - var(--e) * 22) 100% 52% / calc(var(--e) * .9)),
+               0 0 calc(var(--e) * 44 * var(--u)) hsl(10 100% 45% / calc(var(--e) * .55)); }
+[data-v="heat"] .heat { transform: scaleY(calc(1.15 + var(--live) * 3.2)); filter: blur(calc(18 * var(--u))) saturate(calc(1 + var(--live))); }
+
+/* 07 Drawl */
+[data-v="drawl"] .w.on { --fs: calc(1 + var(--e) * .3); font-weight: calc(300 + var(--e) * 550); letter-spacing: calc(-.025em + var(--e) * .1em); }
+
+/* 08 Thrown */
+[data-v="thrown"] .stage { left: calc(70 * var(--u)); width: calc(262 * var(--u)); }
+[data-v="thrown"] .w.thrown { color: rgba(255, 248, 238, .14); }
+.toss { position: absolute; white-space: nowrap; line-height: 1; letter-spacing: -.04em; color: var(--ink); translate: -50% -50%; text-transform: uppercase; }
+
+/* 09 Echo */
+@keyframes ring { from { transform: scale(1); opacity: 0; } 30% { opacity: .9; } }
+[data-v="echo"] .w.on { position: relative; --fs: calc(1 + var(--e) * .5); font-weight: calc(300 + var(--e) * 600); }
+.echo { position: absolute; inset: 0; color: transparent; -webkit-text-stroke: calc(1.1 * var(--u)) var(--ink); transform: scale(calc(1 + var(--k) * .17)); opacity: calc((.5 - var(--k) * .09) * (.45 + var(--live) * 1.2)); animation: ring .7s ease-out calc(var(--k) * 70ms) both; pointer-events: none; }
+
+/* 10 In your face */
+[data-v="face"] .w.on { --fs: calc(1 + var(--e) * .4); font-weight: calc(300 + var(--e) * 600); }
+[data-v="face"] .line.dim { opacity: .2; transition-duration: .12s; }
+.blast { position: absolute; left: 50%; top: calc(360 * var(--u)); white-space: nowrap; font-weight: 900; line-height: 1; letter-spacing: -.05em; text-transform: uppercase; color: var(--ink); }
+
+/* ---------- full-size view ---------- */
+.backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(5, 3, 4, .88); backdrop-filter: blur(6px); }
+.viewbar { position: fixed; z-index: 60; left: 0; right: 0; top: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); }
+.viewbar .act { background: var(--panel); }
+.viewbar .name { font-weight: 650; margin-right: 6px; }
+figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; left: 50%; top: calc(50% + 24px); translate: -50% -50%; width: min(calc((100vh - 96px) * 402 / 874), calc(100vw - 32px), 460px); height: auto; aspect-ratio: 402 / 874; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .w, .w.on, .echo { animation: none !important; }
+}
+</style>
+
+<header class="top">
+  <h1>Reply, <span>shouted</span></h1>
+  <p>Ten ways for Die Hard's reply to shout. Each word's weight, size, angle or heat comes from how loud it was said. The demo voice plays scripted stress; switch to your mic and read the line aloud, shouting the words you want big.</p>
+  <div class="bar" id="bar">
+    <div class="seg" role="group" aria-label="Voice">
+      <button type="button" data-action="demo" aria-pressed="true">Demo voice</button>
+      <button type="button" data-action="mic" aria-pressed="false">My mic</button>
+    </div>
+    <button type="button" class="act" data-action="replay">Replay line</button>
+    <button type="button" class="act" data-action="next">Next line</button>
+    <span class="status" id="status"></span>
+    <div class="meter" aria-hidden="true"><span class="track"><span class="fill"></span></span><span id="db">−∞ dBFS</span></div>
+  </div>
+  <p class="note" id="note">Tap any phone to see it full size.</p>
+</header>
+
+<main class="grid" id="grid"></main>
+
+<script>
+(() => {
+  // Lines from the Figma frames, plus two more. The number is the demo voice's loudness for that word (0..1).
+  const LINES = [
+    "Two .25 lines, .45 after .15 three .7 rounds .55 of .1 you? .9 That’s .25 not .95 a .1 decision. .5 That’s .3 a .1 shrug. 1",
+    "Which .2 part .35 stings .85 more: .5 the .1 two .6 lines, .45 or .2 the .15 no-reply? 1",
+    "Say .3 it .15 again. .6 Louder. .9 I .15 can’t .5 hear .4 you .65 over .15 all .25 that .2 hesitating! 1",
+    "No. 1 Stop. .85 You .2 knew .55 the .1 answer .5 before .3 you .4 asked .35 me. .8",
+  ].map(s => { const t = s.split(" "), out = []; for (let i = 0; i < t.length; i += 2) out.push({ text: t[i], level: +t[i + 1] }); return out; });
+
+  const VARIANTS = [
+    { key: "swell",    name: "Swell",        note: "Louder words get heavier and bigger." },
+    { key: "sideways", name: "Sideways",     note: "Stressed words tip over; the loudest turn fully sideways." },
+    { key: "poster",   name: "Poster",       note: "Every shouted word takes its own line, as wide as it was loud." },
+    { key: "quake",    name: "Quake",        note: "Words tremble while you're loud. More stress, harder shake." },
+    { key: "slam",     name: "Slam",         note: "Words drop in. Loud ones land hard enough to shake the phone." },
+    { key: "heat",     name: "Heat",         note: "Stress heats words from cream to red; the heat floor rises with your voice." },
+    { key: "drawl",    name: "Drawl",        note: "Loud words stretch their vowels: shruuuug." },
+    { key: "thrown",   name: "Thrown",       note: "Shouted words fly out of the sentence and land across the screen." },
+    { key: "echo",     name: "Echo",         note: "Loud words ring out in outlined echoes that pulse with your voice." },
+    { key: "face",     name: "In your face", note: "Loud words fill the screen for a beat, then settle back, bold." },
+  ];
+
+  const MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>';
+  const END = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>';
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hash = n => { const x = Math.sin(n * 12.9898) * 43758.5453; return x - Math.floor(x); };
+  const shape = l => Math.pow(Math.max(0, Math.min(1, l)), 1.3);
+
+  // Per-variant behaviour beyond CSS: what happens when a word lands, and every frame.
+  const BEHAVIOUR = {
+    sideways: {
+      reveal(p, w) {
+        const sign = w.r < .5 ? -1 : 1;
+        if (w.e > .6) {
+          const flip = w.r < .5;
+          w.el.classList.add("side");
+          w.el.style.setProperty("--tilt", flip ? "180deg" : "0deg");
+          w.el.style.setProperty("--from", flip ? "270deg" : "-90deg");
+        } else {
+          const deg = w.e > .28 ? sign * (6 + w.e * 34) : 0;
+          w.el.style.setProperty("--tilt", deg + "deg");
+          w.el.style.setProperty("--from", "0deg");
+        }
+      },
+    },
+    poster: {
+      reveal(p, w) {
+        if (w.e >= .45) {
+          w.el.classList.add("big");
+          if (w.i % 2) w.el.classList.add("right");
+          w.el.style.setProperty("--px", 36);
+          const target = p.stage.clientWidth * (.42 + .58 * w.e);
+          w.el.style.setProperty("--px", Math.min(118, 36 * target / w.el.offsetWidth).toFixed(1));
+        }
+      },
+      fit: false,
+    },
+    quake: {
+      reveal(p, w) { if (w.e > .7) w.el.classList.add("loud"); },
+      frame(p, live) {
+        if (reduced) return;
+        const u = p.u();
+        for (const w of p.words) {
+          if (!w.on) continue;
+          const a = (w.e * .25 + live * w.e * 1.6) * 5 * u;
+          w.el.style.translate = `${(Math.random() * 2 - 1) * a}px ${(Math.random() * 2 - 1) * a}px`;
+          w.el.style.rotate = `${(Math.random() * 2 - 1) * a / u * .8}deg`;
+        }
+      },
+    },
+    slam: {
+      reveal(p, w) {
+        if (w.e > .7) w.el.classList.add("loud");
+        if (reduced || w.e < .3) return;
+        const u = p.u(), a = w.e * 9 * u;
+        setTimeout(() => p.screen.animate([
+          { transform: "none" }, { transform: `translate(${-a}px, ${a * .6}px)` }, { transform: `translate(${a * .7}px, ${-a * .4}px)` },
+          { transform: `translate(${-a * .3}px, ${a * .2}px)` }, { transform: "none" },
+        ], { duration: 260, easing: "ease-out" }), (420 + w.e * 180) * .7);
+      },
+    },
+    drawl: {
+      reveal(p, w) {
+        if (w.e < .5) return;
+        const n = Math.round((w.e - .4) * 8), base = w.e > .75 ? w.text.toUpperCase() : w.text;
+        const m = base.match(/([aeiouyáéíóú]+)[^aeiouyáéíóú]*$/i);
+        if (!m) { w.el.textContent = base; return; }
+        const at = m.index + m[1].length - 1;
+        let k = 0;
+        w.el.textContent = base;
+        const grow = () => {
+          if (k > n || !w.el.isConnected) return;
+          w.el.textContent = base.slice(0, at + 1) + base[at].repeat(k) + base.slice(at + 1);
+          p.fit(w);
+          k++; setTimeout(grow, 55);
+        };
+        grow();
+      },
+    },
+    thrown: {
+      // centre point, angle and longest length (u) for each landing spot; the side ones run up the edges
+      SLOTS: [ { x: 372, y: 400, rot: 90, max: 460 }, { x: 132, y: 196, rot: -11, max: 250 }, { x: 262, y: 664, rot: 8, max: 260 },
+               { x: 30, y: 430, rot: -90, max: 460 }, { x: 292, y: 206, rot: 13, max: 200 }, { x: 128, y: 652, rot: -9, max: 230 },
+               { x: 201, y: 720, rot: 0, max: 300 } ],
+      reveal(p, w) {
+        if (w.e < .55 || p.tossed >= this.SLOTS.length) return;
+        const s = this.SLOTS[p.tossed++], u = p.u();
+        w.el.classList.add("thrown");
+        const t = document.createElement("span");
+        t.className = "toss";
+        t.textContent = w.text;
+        t.style.fontWeight = Math.round(500 + w.e * 400);
+        t.style.left = `calc(${s.x} * var(--u))`;
+        t.style.top = `calc(${s.y} * var(--u))`;
+        let fs = Math.min(36 * (1 + w.e * 1.5), Math.abs(s.rot) === 90 ? 52 : 99);
+        t.style.fontSize = `calc(${fs} * var(--u))`;
+        p.fx.append(t);
+        if (t.offsetWidth > s.max * u) { fs *= s.max * u / t.offsetWidth; t.style.fontSize = `calc(${fs.toFixed(1)} * var(--u))`; }
+        const rot = s.rot + (w.r - .5) * 10;
+        t.style.rotate = rot + "deg";
+        if (reduced) return;
+        const a = w.el.getBoundingClientRect(), sc = p.screen.getBoundingClientRect();
+        const dx = a.left + a.width / 2 - sc.left - s.x * u, dy = a.top + a.height / 2 - sc.top - s.y * u;
+        t.animate([{ translate: `calc(-50% + ${dx}px) calc(-50% + ${dy}px)`, rotate: "0deg", scale: .3, opacity: .2 }, { translate: "-50% -50%", rotate: rot + "deg", scale: 1, opacity: 1 }],
+          { duration: 520, easing: "cubic-bezier(.2, 1.25, .4, 1)" });
+      },
+    },
+    echo: {
+      reveal(p, w) {
+        if (w.e < .4) return;
+        const n = Math.round(w.e * 4);
+        for (let k = 1; k <= n; k++) {
+          const e = document.createElement("span");
+          e.className = "echo"; e.textContent = w.text; e.style.setProperty("--k", k); e.setAttribute("aria-hidden", "true");
+          w.el.append(e);
+        }
+      },
+    },
+    face: {
+      reveal(p, w) {
+        if (w.e < .45 || reduced) return;
+        const b = document.createElement("span"), u = p.u();
+        b.className = "blast"; b.textContent = w.text;
+        b.style.fontSize = "calc(100 * var(--u))";
+        p.fx.append(b);
+        const fs = 100 * (402 * (.85 + w.e * .75) * u) / b.offsetWidth;
+        b.style.fontSize = `calc(${fs.toFixed(1)} * var(--u))`;
+        p.line.classList.add("dim");
+        const c = "translate(-50%, -50%)";
+        b.animate([
+          { transform: `${c} scale(.12)`, opacity: 0, filter: "blur(6px)" },
+          { transform: `${c} scale(1)`, opacity: 1, filter: "blur(0px)", offset: .32 },
+          { transform: `${c} scale(1.04)`, opacity: 1, offset: .7 },
+          { transform: `${c} scale(1.3)`, opacity: 0 },
+        ], { duration: 820, easing: "cubic-bezier(.2, .8, .3, 1)", fill: "forwards" }).onfinish = () => b.remove();
+        clearTimeout(p.dimTimer);
+        p.dimTimer = setTimeout(() => p.line.classList.remove("dim"), 600);
+      },
+    },
+  };
+
+  class Phone {
+    constructor(v, n) {
+      this.v = v; this.b = BEHAVIOUR[v.key] || {};
+      const fig = document.createElement("figure");
+      fig.dataset.v = v.key;
+      fig.innerHTML = `
+        <div class="slot">
+          <div class="phone" tabindex="0" role="button" aria-label="Open ${v.name} full size">
+            <div class="screen">
+              <div class="heat"></div>
+              <div class="cast" aria-hidden="true"><img class="side" src="assets/agent-1.png" alt=""><img class="main" src="assets/agent-2.png" alt=""><img class="side" src="assets/agent-3.png" alt=""></div>
+              <span class="who" aria-hidden="true">Die Hard</span>
+              <div class="stage"><p class="line" aria-live="off"></p></div>
+              <div class="fx" aria-hidden="true"></div>
+              <div class="dock" aria-hidden="true"><span>${MIC}</span><span>${END}</span></div>
+            </div>
+          </div>
+        </div>
+        <figcaption><span class="num">${String(n + 1).padStart(2, "0")}</span><b>${v.name}</b><span>${v.note}</span></figcaption>`;
+      this.fig = fig;
+      this.phone = fig.querySelector(".phone");
+      this.screen = fig.querySelector(".screen");
+      this.stage = fig.querySelector(".stage");
+      this.line = fig.querySelector(".line");
+      this.fx = fig.querySelector(".fx");
+      this.words = [];
+    }
+    u() { return this.screen.clientWidth / 402; }
+    setLine(words, li) {
+      this.line.textContent = ""; this.fx.textContent = "";
+      this.line.classList.remove("out", "dim"); this.line.style.scale = "";
+      this.tossed = 0;
+      this.words = words.map((w, i) => {
+        const el = document.createElement("span");
+        el.className = "w"; el.textContent = w.text;
+        this.line.append(el, " ");
+        return { el, text: w.text, i, r: hash(li * 31 + i + 1), on: false, e: 0 };
+      });
+    }
+    reveal(i, level) {
+      const w = this.words[i];
+      if (!w) return;
+      w.on = true; w.e = shape(level);
+      w.el.style.setProperty("--e", w.e.toFixed(3));
+      w.el.classList.add("on");
+      this.b.reveal?.(this, w);
+      if (this.b.fit !== false && !w.el.classList.contains("side")) this.fit(w);
+      // keep the whole reply inside its area
+      const h = this.line.offsetHeight, H = this.stage.clientHeight;
+      this.line.style.scale = h > H ? (H / h).toFixed(3) : "";
+    }
+    fit(w) {
+      w.el.style.removeProperty("--fit");
+      const max = this.stage.clientWidth, width = w.el.offsetWidth;
+      if (width > max) w.el.style.setProperty("--fit", (max / width).toFixed(3));
+    }
+    out() { this.line.classList.add("out"); this.fx.textContent = ""; }
+    frame(live) { this.b.frame?.(this, live); }
+  }
+
+  const grid = document.getElementById("grid");
+  const phones = VARIANTS.map((v, n) => { const p = new Phone(v, n); grid.append(p.fig); return p; });
+
+  // ---------- voice driver: one voice feeds every phone ----------
+  const $status = document.getElementById("status"), $db = document.getElementById("db"), $note = document.getElementById("note");
+  const S = { mode: "demo", li: 0, wi: 0, live: 0, db: -Infinity, timer: 0, last: performance.now() };
+  const words = () => LINES[S.li];
+  const showStatus = () => { $status.innerHTML = `Line <b>${S.li + 1}</b> of ${LINES.length} · ${S.mode === "mic" ? "listening" : "demo voice"}`; };
+
+  function startLine() {
+    clearTimeout(S.timer);
+    S.wi = 0;
+    phones.forEach(p => p.setLine(words(), S.li));
+    showStatus();
+    if (S.mode === "demo") S.timer = setTimeout(demoStep, 500);
+    else Object.assign(mic, { onsetAt: 0, peak: 0, quietSince: 0 });
+  }
+  function nextLine(dir = 1) {
+    clearTimeout(S.timer);
+    phones.forEach(p => p.out());
+    S.timer = setTimeout(() => { S.li = (S.li + dir + LINES.length) % LINES.length; startLine(); }, 340);
+  }
+  function revealWord(level) {
+    phones.forEach(p => p.reveal(S.wi, level));
+    S.wi++;
+  }
+
+  // Demo voice: scripted stress, with a loudness envelope so live effects move too.
+  function demoStep() {
+    const ws = words();
+    if (S.wi >= ws.length) { S.timer = setTimeout(() => nextLine(), 2600); return; }
+    const w = ws[S.wi], level = Math.min(1, w.level * (.92 + hash(S.li * 7 + S.wi) * .16));
+    S.live = Math.max(S.live, level);
+    revealWord(level);
+    const pause = /[.,?!:]$/.test(w.text) ? 280 : 0;
+    S.timer = setTimeout(demoStep, 170 + w.text.length * 26 + level * 160 + pause);
+  }
+
+  // Mic: loudness in dBFS, scaled against your own recent peak so "emphasis" is relative to how you talk.
+  const mic = { ctx: null, an: null, buf: null, stream: null, peakDb: -24, onsetAt: 0, peak: 0, quietSince: 0, lastWord: 0 };
+  async function startMic() {
+    try {
+      mic.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    } catch (err) {
+      $note.textContent = "The microphone isn't available here. Open this page from the shout folder on localhost (python3 -m http.server) in Chrome or Safari to shout at it. Back to the demo voice.";
+      $note.classList.add("err");
+      setMode("demo");
+      return;
+    }
+    mic.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = mic.ctx.createMediaStreamSource(mic.stream);
+    mic.an = mic.ctx.createAnalyser(); mic.an.fftSize = 1024;
+    mic.buf = new Float32Array(mic.an.fftSize);
+    src.connect(mic.an);
+    $note.classList.remove("err");
+    $note.textContent = "Read the line out loud. Each word appears as you say it; shout the ones you want big. Pause to move on.";
+    startLine();
+  }
+  function stopMic() {
+    mic.stream?.getTracks().forEach(t => t.stop());
+    mic.ctx?.close();
+    Object.assign(mic, { ctx: null, an: null, stream: null });
+  }
+  function micTick(now) {
+    mic.an.getFloatTimeDomainData(mic.buf);
+    let sum = 0; for (const v of mic.buf) sum += v * v;
+    const db = 20 * Math.log10(Math.sqrt(sum / mic.buf.length) + 1e-9);
+    mic.peakDb = Math.min(0, Math.max(-28, db, mic.peakDb - .03));
+    const floor = -58, level = Math.max(0, Math.min(1, (db - floor) / (mic.peakDb - floor)));
+    S.db = db;
+    S.live = Math.max(level, S.live);
+    const n = words().length;
+    // A word lands 200ms after its onset, with the loudest moment of that window as its stress.
+    if (mic.onsetAt) {
+      mic.peak = Math.max(mic.peak, level);
+      if (now - mic.onsetAt > 200) { revealWord(mic.peak); mic.lastWord = now; mic.onsetAt = 0; }
+    } else if (level > .22 && S.wi < n && now - mic.lastWord > 60) {
+      mic.onsetAt = now; mic.peak = level;
+    }
+    if (level > .12) mic.quietSince = now;
+    else if (S.wi >= n && !mic.onsetAt && now - mic.quietSince > 1400) { mic.quietSince = now + 1e6; nextLine(); }
+  }
+
+  function setMode(mode) {
+    if (mode === S.mode && mode !== "demo") return;
+    S.mode = mode;
+    document.body.classList.toggle("mic", mode === "mic");
+    document.querySelectorAll('[data-action="demo"],[data-action="mic"]').forEach(b => b.setAttribute("aria-pressed", String(b.dataset.action === mode)));
+    clearTimeout(S.timer);
+    if (mode === "mic") startMic();
+    else { stopMic(); startLine(); }
+  }
+
+  function loop(now) {
+    const dt = Math.min(.1, (now - S.last) / 1000); S.last = now;
+    S.live *= Math.exp(-dt / .16);
+    if (S.mode === "mic" && mic.an) micTick(now);
+    else S.db = S.live > .01 ? -58 + S.live * 42 : -Infinity;
+    const live = S.live.toFixed(3);
+    document.documentElement.style.setProperty("--live", live);
+    for (const p of phones) { p.screen.style.setProperty("--live", live); p.frame(S.live); }
+    $db.textContent = S.db > -90 ? `${Math.round(S.db)} dBFS` : "−∞ dBFS";
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- full-size view ----------
+  let open = null, back = null, bar = null;
+  function openPhone(p) {
+    if (open) return;
+    open = p; p.fig.classList.add("open");
+    back = document.createElement("div"); back.className = "backdrop";
+    bar = document.createElement("div"); bar.className = "viewbar";
+    bar.innerHTML = `<span class="name">${p.v.name}</span><button type="button" class="act" data-action="replay">Replay line</button><button type="button" class="act" data-action="next">Next line</button><button type="button" class="act" data-action="close">Close</button>`;
+    back.addEventListener("click", closePhone);
+    document.body.append(back, bar);
+    p.phone.setAttribute("aria-label", `${p.v.name}, full size`);
+    bar.querySelector('[data-action="close"]').focus();
+  }
+  function closePhone() {
+    if (!open) return;
+    open.fig.classList.remove("open");
+    open.phone.setAttribute("aria-label", `Open ${open.v.name} full size`);
+    open.phone.focus();
+    back.remove(); bar.remove(); open = null;
+  }
+  grid.addEventListener("click", e => { const f = e.target.closest("figure"); if (f && e.target.closest(".phone")) openPhone(phones.find(p => p.fig === f)); });
+  grid.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("phone")) { e.preventDefault(); openPhone(phones.find(p => p.phone === e.target)); } });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closePhone(); });
+  document.addEventListener("click", e => {
+    const a = e.target.closest("[data-action]")?.dataset.action;
+    if (a === "demo" || a === "mic") setMode(a);
+    else if (a === "replay") startLine();
+    else if (a === "next") nextLine();
+    else if (a === "close") closePhone();
+  });
+
+  startLine();
+  requestAnimationFrame(loop);
+})();
+</script>
