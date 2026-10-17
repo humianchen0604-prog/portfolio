@@ -2,7 +2,7 @@
 
 Three versions of the Figma "F3 · Reply" phone screen (file `phZYZx5gmbFyf7JNS5Geve`,
 nodes `91:4878` "F3 · 4 Reply" and `91:4862` "F3 · 3 Reply, word by word") where
-Die Hard's reply **shouts**: each word's weight, size, angle, heat etc. comes from
+Die Hard's reply **shouts**: each word's weight, size or stretch comes from
 how loud it was said. The user asked for the character's line to shout (not their
 own speech), emphasis from live mic loudness, on one gallery page.
 
