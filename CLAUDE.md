@@ -23,6 +23,16 @@
   `Weight=Regular|Bold`, glyph fills bound to the `icon/ink` variable (Lava
   collection, Light/Dark modes).
 
+- `lava/voice/`: 20 filled, liquid **voice-input (listening) icons** for Lava.
+  `voice.js` holds the recipes as animated distance fields `make(t, a)` (t =
+  time, a = 0 idle → 1 listening) plus the tracer the gallery uses each frame.
+  `index.html` is the animated gallery (idle icons breathe in CSS; listening
+  ones are retraced live), published at
+  https://claude.ai/artifact/VT7rzoHvRgHDwN6sTTSnNG. `python3 lava/voice/export.py`
+  writes the static `svg/` (100 units) and `svg/32/` at the shared `POSE`,
+  reusing `lava/icons/generate.py`'s tracing and fitting. The user picks which
+  ones go into the Figma file above.
+
 ## Working here
 
 - Prototypes are self-contained static pages (no build step). Serve the folder
