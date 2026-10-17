@@ -11,7 +11,8 @@
   snapshot from when it moved; make new changes there, not here.
 - `memories/`: **Memory temperature**, a phone prototype for the memories tab
   of the agent chat app. Saved memories cool from molten to frozen with time
-  since they were last revisited, shown in four layouts with a time scrub.
+  since they were last revisited: six state cards (plus Core memory), tabs by
+  kind of event, and a time bar.
   Read `memories/CLAUDE.md` before changing it.
 
 ## Working here
