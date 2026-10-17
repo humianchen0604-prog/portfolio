@@ -18,6 +18,10 @@
   Two weights: Regular (`svg/`) and Bold (`svg/bold/`, heavier lines and no
   dot/hole too small for 32px); `svg/32/{regular,bold}/` are the same icons
   drawn natively at 32×32, which is what goes into Figma as components.
+  Figma: https://www.figma.com/design/FZc3qGmrdKMPBMPINqeYmw ("Lava Memory
+  Icons", Side Project drafts): 20 component sets `Lava/NN Name` with
+  `Weight=Regular|Bold`, glyph fills bound to the `icon/ink` variable (Lava
+  collection, Light/Dark modes).
 
 ## Working here
 
