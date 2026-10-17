@@ -30,8 +30,13 @@
   ones are retraced live), published at
   https://claude.ai/artifact/VT7rzoHvRgHDwN6sTTSnNG. `python3 lava/voice/export.py`
   writes the static `svg/` (100 units) and `svg/32/` at the shared `POSE`,
-  reusing `lava/icons/generate.py`'s tracing and fitting. The user picks which
-  ones go into the Figma file above.
+  reusing `lava/icons/generate.py`'s tracing and fitting, in three frames:
+  `svg/` (still pose), `svg/idle/`, `svg/listening/` (each icon's loudest
+  moment), each also under `svg/32/`. `VARIANTS` holds six linked takes on 04
+  (ids 04a–04f), shown in the gallery's "04, linked" section.
+  In Figma (same file, "Voice" page): the user's picks 04, 06, 14, 15, 20 as
+  component sets `Voice/NN Name` with `State=Idle|Listening`, glyphs bound to
+  `icon/ink`.
 
 ## Working here
 

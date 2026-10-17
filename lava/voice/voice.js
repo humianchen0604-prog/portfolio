@@ -341,6 +341,89 @@
     },
   ];
 
+  // ------------------------------------------------------------ 04, linked
+
+  /** The five pills of 04 Fading Pills at time t: centre x, radii and loudness. */
+  function pills(t, a, dy = () => 0, thin = 1) {
+    const xs = [17, 30, 45, 61, 78], rx = [2.2, 3.6, 5, 5.8, 8.5].map(r => r * thin), ry = [11, 20, 27, 20, 9.5];
+    return xs.map((x, i) => {
+      const L = level(t - i * 0.12, a, i * 0.8);
+      return { x, y: 50 + dy(i), rx: rx[i], ry: i === 4 ? ry[i] + 2 * L : ry[i] * (0.55 + 0.75 * L), L };
+    });
+  }
+  const pillShapes = ps => ps.map(p => ellipse(p.x, p.y, p.rx, p.ry));
+
+  /** Variations on 04 where the pills are joined to each other. */
+  const VARIANTS = [
+    {
+      id: '04a', name: 'Acid Thread', note: 'Pills strung on a thread of acid that flares where it meets them.',
+      make(t, a) {
+        const ps = pills(t, a, () => 0, 0.75);
+        const threads = ps.slice(1).map((p, i) => capsule(ps[i].x, 50, p.x, 50, 0.7 + 0.6 * (ps[i].L + p.L) / 2));
+        return union([...pillShapes(ps), ...threads], 2.5);
+      },
+    },
+    {
+      id: '04b', name: 'Taffy', note: 'Stretchy necks between pills that thin, snap and join again.',
+      make(t, a) {
+        const ps = pills(t, a, () => 0, 0.9), sp = 0.7 + 1.4 * a;
+        const necks = ps.slice(1).flatMap((p, i) => {
+          const pull = abs(sin(t * sp + i * 1.7));
+          const w = 1.2 + 2.6 * (1 - pull), sag = 4 + 14 * pull;
+          if (w < 1.5) return [];
+          const q = ps[i], y0 = 50 + q.ry * 0.35;
+          return [stroke(wave(10, u => [lerp(q.x, p.x, u), y0 + sag * sin(PI * u)]), w)];
+        });
+        return union([...pillShapes(ps), ...necks], 4);
+      },
+    },
+    {
+      id: '04c', name: 'Bead Chain', note: 'Droplets bob in the gaps and link the pills like a chain.',
+      make(t, a) {
+        const ps = pills(t, a, () => 0, 0.7);
+        const beads = ps.slice(1).map((p, i) => circle((ps[i].x + p.x) / 2,
+          50 + (i % 2 ? 1 : -1) * (7 + 3 * sin(t * (1.6 + 3 * a) + i)), 2.8 + 1.4 * level(t, a, i * 1.7)));
+        return union([...pillShapes(ps), ...beads], 3);
+      },
+    },
+    {
+      id: '04d', name: 'Melt Bridge', note: 'The pills fuse into one slab that drips between them.',
+      make(t, a) {
+        const ps = pills(t, a);
+        const drips = ps.slice(1).map((p, i) => {
+          const x = (ps[i].x + p.x) / 2;
+          return drip(x, 52, 62 + 22 * level(t, a, i * 1.3 + 0.5), 2, 3.2);
+        });
+        const slab = union([...pillShapes(ps), capsule(17, 50, 78, 50, 4), ...drips], 8);
+        const pits = union([0, 1, 2, 3].map(i => {
+          const p = frac(t * (0.1 + 0.3 * a) + i / 4);
+          return circle(24 + i * 15 + 3 * sin(t + i), 56 - 14 * p, 1.2 + 1.2 * sin(PI * p));
+        }));
+        return cut(slab, pits, 1);
+      },
+    },
+    {
+      id: '04e', name: 'Acid Membrane', note: 'The pills live inside a liquid skin and push at it when you speak.',
+      make(t, a) {
+        const ps = pills(t, a), inner = union(pillShapes(ps), 10);
+        const skin = band((x, y) => inner(x, y) - 5.5, 2.6);
+        return union([...pillShapes(ps), skin], 2.5);
+      },
+    },
+    {
+      id: '04f', name: 'Zigzag Ladder', note: 'Pills step up and down, joined by diagonal rungs.',
+      make(t, a) {
+        const off = i => (i % 2 ? 1 : -1) * (9 + 4 * sin(t * (0.9 + 2 * a) + i));
+        const ps = pills(t, a, off);
+        const rungs = ps.slice(1).map((p, i) => {
+          const q = ps[i], up = q.y < p.y;
+          return capsule(q.x, q.y + (up ? 1 : -1) * q.ry * 0.55, p.x, p.y + (up ? -1 : 1) * p.ry * 0.55, 1.6 + 0.9 * q.L);
+        });
+        return union([...pillShapes(ps), ...rungs], 3.5);
+      },
+    },
+  ];
+
   /** The frame used for the static SVGs and the still preview. */
   const POSE = { t: 1, a: 0.65 };
 
@@ -436,7 +519,7 @@
     ctx.fill('evenodd');
   }
 
-  const api = { ICONS, POSE, contour, sample, fillLoops, level, speech };
+  const api = { ICONS, VARIANTS, POSE, contour, sample, fillLoops, level, speech };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.LavaVoice = api;
 })(typeof window !== 'undefined' ? window : globalThis);

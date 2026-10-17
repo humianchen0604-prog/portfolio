@@ -72,9 +72,13 @@
   .grid[data-tint="acid"] { --stage: var(--acid-stage); --glyph: var(--acid); }
   .grid[data-tint="violet"] { --stage: var(--violet-stage); --glyph: var(--violet); }
 
-  .card { display: grid; gap: 10px; min-width: 0; }
+  .more { display: grid; gap: 10px; padding-top: 8px; }
+  #grid-linked { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); }
+  @media (min-width: 1100px) { #grid-linked { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+  .section-title { margin: 0; font: 700 clamp(22px, 3.4vw, 32px)/1.1 var(--display); letter-spacing: -0.01em; }
+  .card { display: grid; gap: 10px; min-width: 0; align-content: start; }
   .stage {
-    position: relative; display: block; width: 100%; max-width: 100%; aspect-ratio: 1; padding: 0;
+    position: relative; display: block; width: 100%; max-width: 100%; min-width: 0; aspect-ratio: 1; padding: 0;
     border: 0; border-radius: 22px; background: var(--stage); cursor: pointer;
     transition: transform .25s cubic-bezier(.3, 1.6, .5, 1);
   }
@@ -155,6 +159,12 @@
 
   <main class="grid" id="grid" data-tint="ink" aria-label="Voice icons"></main>
 
+  <section class="more" aria-labelledby="linked-title">
+    <h2 class="section-title" id="linked-title">04, linked</h2>
+    <p class="lede">Six takes on Fading Pills where the pills are joined: by thread, taffy, beads, a melting bridge, a skin and a ladder.</p>
+    <div class="grid" id="grid-linked" data-tint="ink" aria-label="Linked variations of 04"></div>
+  </section>
+
   <div class="tray" role="status">
     <p id="tray-text">No picks yet. Tap <b>Pick</b> under the icons you want in Figma.</p>
     <button type="button" class="copy" id="copy" disabled>Copy picks</button>
@@ -164,8 +174,13 @@
 <script src="voice.js"></script>
 <script>
 (() => {
-  const { ICONS, POSE, contour, fillLoops, level } = window.LavaVoice;
+  const { ICONS, VARIANTS, POSE, contour, fillLoops, level } = window.LavaVoice;
   const grid = document.getElementById('grid');
+  const grids = [grid, document.getElementById('grid-linked')];
+  const ENTRIES = [
+    ...ICONS.map((ic, i) => ({ ...ic, id: String(i + 1).padStart(2, '0'), home: grids[0] })),
+    ...VARIANTS.map(v => ({ ...v, home: grids[1] })),
+  ];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const RES = { still: 96, live: 80, all: 64 };
   let listenAll = false;
@@ -173,23 +188,31 @@
   let frozen = null;
 
   const store = {
-    get() { try { return new Set(JSON.parse(localStorage.getItem('lava-voice-picks') || '[]')); } catch { return new Set(); } },
+    get() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('lava-voice-picks') || '[]');
+        return new Set(saved.map(v => typeof v === 'number' ? String(v + 1).padStart(2, '0') : v));
+      } catch { return new Set(); }
+    },
     set(v) { try { localStorage.setItem('lava-voice-picks', JSON.stringify([...v])); } catch {} },
   };
   const picks = store.get();
-  const label = i => `${String(i + 1).padStart(2, '0')} ${ICONS[i].name}`;
+  const byId = Object.fromEntries(ENTRIES.map(e => [e.id, e]));
+  const label = id => `${id} ${byId[id] ? byId[id].name : ''}`.trim();
+  const sorted = () => [...picks].filter(id => byId[id]).sort();
 
-  const cards = ICONS.map((ic, i) => {
+  const cards = ENTRIES.map((ic, i) => {
+    const id = ic.id;
     const el = document.createElement('article');
     el.className = 'card';
     el.innerHTML = `
-      <button type="button" class="stage" id="stage-${i + 1}" data-live="false" style="--delay:${-(i * 0.53).toFixed(2)}s" aria-pressed="false" aria-label="Listen: ${ic.name}"><canvas></canvas></button>
+      <button type="button" class="stage" id="stage-${id}" data-live="false" style="--delay:${-(i * 0.53).toFixed(2)}s" aria-pressed="false" aria-label="Listen: ${ic.name}"><canvas></canvas></button>
       <div class="meta">
-        <div class="title"><span class="num">${String(i + 1).padStart(2, '0')}</span><h2>${ic.name}</h2><span class="level">Idle</span></div>
+        <div class="title"><span class="num">${id}</span><h2>${ic.name}</h2><span class="level">Idle</span></div>
         <p>${ic.note}</p>
-        <button type="button" class="pick" id="pick-${i + 1}" aria-pressed="${picks.has(i)}">${picks.has(i) ? 'Picked' : 'Pick'}</button>
+        <button type="button" class="pick" id="pick-${id}" aria-pressed="${picks.has(id)}">${picks.has(id) ? 'Picked' : 'Pick'}</button>
       </div>`;
-    grid.appendChild(el);
+    ic.home.appendChild(el);
     const stage = el.querySelector('.stage');
     const c = {
       ic, i, stage, canvas: el.querySelector('canvas'), levelEl: el.querySelector('.level'),
@@ -204,9 +227,9 @@
     });
     const pick = el.querySelector('.pick');
     pick.addEventListener('click', () => {
-      picks.has(i) ? picks.delete(i) : picks.add(i);
-      pick.setAttribute('aria-pressed', String(picks.has(i)));
-      pick.textContent = picks.has(i) ? 'Picked' : 'Pick';
+      picks.has(id) ? picks.delete(id) : picks.add(id);
+      pick.setAttribute('aria-pressed', String(picks.has(id)));
+      pick.textContent = picks.has(id) ? 'Picked' : 'Pick';
       store.set(picks);
       renderTray();
     });
@@ -269,7 +292,7 @@
   function renderTray() {
     const text = document.getElementById('tray-text');
     const copy = document.getElementById('copy');
-    const list = [...picks].sort((x, y) => x - y).map(label);
+    const list = sorted().map(label);
     copy.disabled = !list.length;
     text.innerHTML = list.length
       ? `<b>${list.length} picked</b> &nbsp;${list.join(', ')}`
@@ -277,7 +300,7 @@
   }
 
   document.getElementById('copy').addEventListener('click', async e => {
-    const list = [...picks].sort((x, y) => x - y).map(label).join(', ');
+    const list = sorted().map(label).join(', ');
     const btn = e.currentTarget;
     try { await navigator.clipboard.writeText(`Lava Voice picks: ${list}`); btn.textContent = 'Copied'; }
     catch {
@@ -291,7 +314,7 @@
 
   document.querySelectorAll('button[data-tint]').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('button[data-tint]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
-    grid.dataset.tint = btn.dataset.tint;
+    grids.forEach(g => { g.dataset.tint = btn.dataset.tint; });
     readGlyph();
   }));
   document.getElementById('listen-all').addEventListener('click', e => {
