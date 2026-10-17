@@ -15,6 +15,9 @@
   joined with smooth unions/cuts) and writes `svg/*.svg` (one editable path each,
   `currentColor`) plus the gallery in `index.html`. Edit a recipe and rerun
   `python3 lava/icons/generate.py`; don't hand-edit the generated block.
+  Two weights: Regular (`svg/`) and Bold (`svg/bold/`, heavier lines and no
+  dot/hole too small for 32px); `svg/32/{regular,bold}/` are the same icons
+  drawn natively at 32×32, which is what goes into Figma as components.
 
 ## Working here
 

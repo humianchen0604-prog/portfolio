@@ -25,6 +25,14 @@ X, Y = np.meshgrid(_axis, _axis)
 
 W = 2.4  # outline weight
 J = 5.0  # how far outlines melt into each other where they meet
+DOT = 0.0  # smallest radius for loose dots and pin-holes
+GROW = 0.0  # how much filled icons swell
+
+# Bold is drawn for 32px and below: heavier lines, no dot or hole too small to see.
+WEIGHTS = {
+    "regular": dict(W=2.4, J=5.0, DOT=0.0, GROW=0.0),
+    "bold": dict(W=4.2, J=6.5, DOT=2.8, GROW=0.7),
+}
 
 
 # ---------------------------------------------------------------- shapes
@@ -70,16 +78,21 @@ def polygon(pts):
     return np.where(inside, -d, d)
 
 
-def stroke(pts, w=W):
-    return _seg_dist(pts, closed=False) - w / 2
+def stroke(pts, w=None):
+    return _seg_dist(pts, closed=False) - (W if w is None else w) / 2
 
 
 def capsule(a, b, r):
     return _seg_dist([a, b], closed=False) - r
 
 
-def ring(d, w=W):
-    return np.abs(d) - w / 2
+def ring(d, w=None):
+    return np.abs(d) - (W if w is None else w) / 2
+
+
+def dot(cx, cy, r):
+    """A loose droplet or pin-hole, never smaller than the weight allows."""
+    return circle(cx, cy, max(r, DOT))
 
 
 def _fillet(pts, radii, seg=12):
@@ -242,7 +255,7 @@ def acid_drip():
     d = union(circle(50, 38, 29), drip(36, 50, 74, 2.6, 4.6), drip(55, 55, 85, 3.2, 5.8),
               drip(69, 52, 66, 2.2, 3.6), k=7)
     d = cut(d, star(45, 33, 10.5, inner=0.48, tip=1.2, notch=1.4), k=1)
-    return np.minimum(d, circle(69, 77, 2.6))
+    return np.minimum(d, dot(69, 77, 2.6))
 
 
 @icon("Venn Memory", "line", "Three overlapping memories; the spark lives where all of them meet.")
@@ -269,7 +282,7 @@ def melting_star():
     d = union(star(50, 38, 32, inner=0.52, tip=3, notch=4),
               drip(70.5, 60, 77, 2.8, 4.4), drip(30, 60, 71, 2.3, 3.4), drip(50, 54, 66, 2, 3), k=5)
     d = cut(d, circle(50, 40, 5.5), k=1)
-    return np.minimum(d, circle(70.5, 87, 2.4))
+    return np.minimum(d, dot(70.5, 87, 2.4))
 
 
 @icon("Star Orbit", "line", "A spark at the core, beads of memory clinging to its orbit.")
@@ -281,25 +294,25 @@ def star_orbit():
 @icon("Eroded Orb", "fill", "Acid eats at the edge; the star in the middle stays.")
 def eroded_orb():
     bites = union(circle(70, 70, 9), circle(84, 53, 5), circle(62, 86, 5.5), circle(83, 70, 4.2),
-                  circle(55, 65, 3.6), circle(74, 82, 3.4), circle(47, 77, 2.6), circle(64, 55, 2.4),
-                  circle(80, 40, 2.2), k=3)
+                  circle(55, 65, 3.6), circle(74, 82, 3.4), dot(47, 77, 2.6), dot(64, 55, 2.4),
+                  dot(80, 40, 2.2), k=3)
     d = cut(circle(50, 50, 37), bites, k=2.5)
     d = cut(d, star(38, 37, 12, inner=0.48, tip=1.4, notch=1.8), k=1)
-    return np.minimum(d, circle(91, 61, 1.8))
+    return np.minimum(d, dot(91, 61, 1.8))
 
 
 @icon("Spark Loop", "line", "A thought looping back to the spark it came from.")
 def spark_loop():
     path = curve([(32, 32), (40, 44), (54, 50), (70, 56), (80, 70), (72, 84), (56, 86), (48, 74), (56, 62),
                   (72, 63), (88, 69)])
-    d = union(stroke(path, 3), sparkle(32, 32, 15), k=4)
-    return np.minimum(d, np.minimum(sparkle(15, 58, 6), circle(24, 72, 1.8)))
+    d = union(stroke(path, W * 1.25), sparkle(32, 32, 15), k=4)
+    return np.minimum(d, np.minimum(sparkle(15, 58, 6), dot(24, 72, 1.8)))
 
 
 @icon("Droplet Vault", "fill", "A single drop sealed around a spark and a few bubbles.")
 def droplet_vault():
     d = teardrop(50, 52, 40)
-    return cut(d, union(sparkle(50, 64, 15), circle(40, 45, 3), circle(57, 38, 2), k=1), k=1)
+    return cut(d, union(sparkle(50, 64, 15), circle(40, 45, 3), dot(57, 38, 2), k=1), k=1)
 
 
 @icon("Rising Bubbles", "line", "Bubbles rising and joining; the biggest carries the spark.")
@@ -307,7 +320,7 @@ def rising_bubbles():
     d = union(ring(circle(48, 86, 5)), ring(circle(56, 71, 8)), ring(circle(45, 51, 11.5)),
               ring(circle(60, 25, 15.5)), k=J)
     return np.minimum(d, np.minimum(sparkle(60, 25, 8.5),
-                                    np.minimum(circle(33, 72, 2), circle(66, 90, 1.8))))
+                                    np.minimum(dot(33, 72, 2), dot(66, 90, 1.8))))
 
 
 @icon("Seed Cluster", "fill", "Memories budding off a core; some cells still empty.")
@@ -327,15 +340,15 @@ def puddle_ripples():
     ball = cut(circle(50, 36, 13), star(50, 36.5, 6.5, inner=0.48, tip=1, notch=1), k=0.8)
     drop = union(ball, capsule((50, 44), (50, 76), 1.6), k=6)
     d = union(ring(ellipse(50, 80, 38, 10)), ring(ellipse(50, 80, 20, 4.6)), drop, k=4)
-    return np.minimum(d, np.minimum(circle(30, 62, 2.4), np.minimum(circle(69, 58, 2),
-                                                                   circle(76, 66, 1.4))))
+    return np.minimum(d, np.minimum(dot(30, 62, 2.4), np.minimum(dot(69, 58, 2),
+                                                                   dot(76, 66, 1.4))))
 
 
 @icon("Spark Emerging", "fill", "Recall: a spark pulling itself out of the orb.")
 def spark_emerging():
     d = union(circle(41, 61, 27), sparkle(69, 31, 17), k=13)
-    d = cut(d, union(circle(32, 70, 4.5), circle(46, 78, 2.6)), k=1)
-    return np.minimum(d, np.minimum(circle(86, 54, 2.4), circle(88, 12, 1.8)))
+    d = cut(d, union(circle(32, 70, 4.5), dot(46, 78, 2.6)), k=1)
+    return np.minimum(d, np.minimum(dot(86, 54, 2.4), dot(88, 12, 1.8)))
 
 
 @icon("Acid Spiral", "line", "A memory winding out from its spark and pooling at the end.")
@@ -344,7 +357,7 @@ def acid_spiral():
     r = 7 + 29 * turns / turns[-1]
     a = turns - math.pi / 2
     path = np.c_[50 + r * np.cos(a), 50 + r * np.sin(a)]
-    return union(stroke(path, 2.6), sparkle(50, 50, 6.5), circle(*path[-1], 5), k=4)
+    return union(stroke(path, W * 1.1), sparkle(50, 50, 6.5), circle(*path[-1], 5), k=4)
 
 
 # ---------------------------------------------------------------- tracing
@@ -514,13 +527,14 @@ def fit_loop(pts, err=0.02):
     return out
 
 
-def to_path(loops):
+def to_path(loops, scale=1.0):
     def f(v):
         s = f"{v:.2f}".rstrip("0").rstrip(".")
         return "0" if s == "-0" else s
 
     parts = []
     for beziers in loops:
+        beziers = [b * scale for b in beziers]
         p0 = beziers[0][0]
         cmd = [f"M{f(p0[0])} {f(p0[1])}"]
         for b in beziers:
@@ -535,24 +549,38 @@ def slug(n, name):
     return f"{n:02d}-" + re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
-def build(entry):
-    loops = trace(entry["fn"]())
+def build(entry, weight="regular"):
+    globals().update(WEIGHTS[weight])
+    field = entry["fn"]()
+    if entry["kind"] == "fill":
+        field = field - GROW
+    loops = trace(field)
     allpts = np.vstack(loops)
     shift = 50 - (allpts.min(axis=0) + allpts.max(axis=0)) / 2  # centre in the viewBox
-    return to_path([fit_loop(p + shift) for p in loops])
+    return [fit_loop(p + shift) for p in loops]
+
+
+def write_svg(path, n, entry, d, size):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" width="{size}" height="{size}">\n'
+        f'  <title>Lava {n:02d} · {entry["name"]}</title>\n'
+        f'  <path fill="currentColor" fill-rule="evenodd" d="{d}"/>\n'
+        "</svg>\n")
 
 
 def main():
+    """svg/ holds the 100-unit masters (svg/bold/ for Bold); svg/32/ the same icons drawn at 32x32."""
     sprite, cards = [], []
     for n, entry in enumerate(ICONS, 1):
-        d = build(entry)
         name = slug(n, entry["name"])
-        (HERE / "svg" / f"{name}.svg").write_text(
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">\n'
-            f'  <title>Lava {n:02d} · {entry["name"]}</title>\n'
-            f'  <path fill="currentColor" fill-rule="evenodd" d="{d}"/>\n'
-            "</svg>\n")
-        sprite.append(f'<symbol id="i{n:02d}" viewBox="0 0 100 100"><path fill-rule="evenodd" d="{d}"/></symbol>')
+        for weight, folder, sym in (("regular", "", "i"), ("bold", "bold/", "b")):
+            loops = build(entry, weight)
+            d = to_path(loops)
+            write_svg(HERE / "svg" / f"{folder}{name}.svg", n, entry, d, 100)
+            write_svg(HERE / "svg" / "32" / weight / f"{name}.svg", n, entry, to_path(loops, 0.32), 32)
+            sprite.append(f'<symbol id="{sym}{n:02d}" viewBox="0 0 100 100"><path fill-rule="evenodd" d="{d}"/></symbol>')
+            print(f"{name} {weight}: {d.count('C')} curves")
         use = f'<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i{n:02d}"/></svg>'
         cards.append(
             f'<figure class="card" data-kind="{entry["kind"]}">\n'
@@ -563,7 +591,6 @@ def main():
             f' <span class="tag">{"Filled" if entry["kind"] == "fill" else "Outline"}</span></div>'
             f'<p>{entry["note"]}</p><a href="svg/{name}.svg" download>{name}.svg</a></figcaption>\n'
             "</figure>")
-        print(f"{name}: {d.count('C')} curves")
 
     html_path = HERE / "index.html"
     html = html_path.read_text()
