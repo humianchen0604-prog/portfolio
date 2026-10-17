@@ -3,9 +3,9 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200..900&family=Geist:wght@100..900&family=Geist+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a contact sheet of ten Figma "F3 · Reply" phones (402 × 874 design units), all driven by one voice. */
+/* Layout: a contact sheet of three Figma "F3 · Reply" phones (402 × 874 design units), all driven by one voice. */
 :root {
   --page: #0b090a;        /* gallery ground, warm near-black */
   --panel: #161213;       /* control bar */
@@ -16,6 +16,7 @@
   --screen: #050304;      /* Figma phone background */
   --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --acid: "Unbounded", "Arial Black", ui-sans-serif, system-ui, sans-serif;  /* the reply */
   color-scheme: dark;
 }
 html, body { background: var(--page); color: var(--ink); }
@@ -25,8 +26,8 @@ button { font: inherit; color: inherit; }
 
 /* ---------- gallery chrome ---------- */
 .top { max-width: 1060px; margin: 0 auto 28px; display: grid; gap: 18px; }
-.top h1 { margin: 0; font-weight: 800; font-size: clamp(40px, 7vw, 76px); line-height: .9; letter-spacing: -.045em; text-wrap: balance; }
-.top h1 span { font-weight: 200; letter-spacing: -.03em; }
+.top h1 { margin: 0; font: 800 clamp(34px, 6vw, 64px)/.95 var(--acid); letter-spacing: -.04em; text-wrap: balance; text-shadow: 0 0 18px rgba(255, 70, 200, .45); }
+.top h1 span { font-weight: 200; letter-spacing: -.02em; filter: blur(1.2px); }
 .top p { margin: 0; color: var(--muted); max-width: 60ch; }
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
 .seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--page); border: 1px solid var(--line); }
@@ -52,7 +53,8 @@ figcaption span:last-child { color: var(--muted); font-size: 13px; line-height: 
 
 /* ---------- the phone (Figma 91:4878 / 91:4862) ---------- */
 .phone { position: absolute; inset: 0; container-type: inline-size; cursor: zoom-in; border-radius: 10.9% / 5%; }
-.screen { --u: calc(100cqw / 402); --live: 0; position: absolute; inset: 0; overflow: hidden; background: var(--screen); border-radius: calc(44 * var(--u)); box-shadow: 0 0 0 1px #1d1819; }
+.screen { --u: calc(100cqw / 402); --live: 0; --txt: var(--ink); --ui: #fff; --btn: rgba(255, 255, 255, .1); --btn-line: rgba(64, 64, 64, .5); --grain: .18;
+  position: absolute; inset: 0; overflow: hidden; background: var(--screen); border-radius: calc(44 * var(--u)); box-shadow: 0 0 0 1px #1d1819; }
 .heat { position: absolute; left: calc(-110 * var(--u)); top: calc(740 * var(--u)); width: calc(622 * var(--u)); height: calc(300 * var(--u)); pointer-events: none;
   background:
     radial-gradient(34% 42% at 22% 46%, rgba(120, 86, 255, .55), transparent 72%),
@@ -65,37 +67,81 @@ figcaption span:last-child { color: var(--muted); font-size: 13px; line-height: 
 .cast img { display: block; border-radius: 50%; }
 .cast .side { width: calc(32 * var(--u)); height: calc(32 * var(--u)); opacity: .4; }
 .cast .main { width: calc(44 * var(--u)); height: calc(44 * var(--u)); box-shadow: 0 0 calc(14 * var(--u)) rgba(255, 90, 30, .35); }
-.who { position: absolute; top: calc(106 * var(--u)); left: 50%; translate: -50% 0; font: 600 calc(9.5 * var(--u))/1 var(--sans); letter-spacing: .01em; color: var(--ink); opacity: .9; white-space: nowrap; }
+.who { position: absolute; top: calc(106 * var(--u)); left: 50%; translate: -50% 0; font: 600 calc(9.5 * var(--u))/1 var(--sans); letter-spacing: .01em; color: var(--ui); opacity: .9; white-space: nowrap; }
 .stage { position: absolute; left: calc(30 * var(--u)); width: calc(342 * var(--u)); top: calc(130 * var(--u)); height: calc(460 * var(--u)); display: flex; align-items: center; justify-content: center; }
-.line { margin: 0; width: 100%; text-align: center; font: 300 calc(36 * var(--u))/1.2 var(--sans); letter-spacing: -.025em; color: var(--ink); transition: opacity .32s ease; transform-origin: 50% 50%; }
+.line { margin: 0; width: 100%; text-align: center; font: 300 calc(30 * var(--u))/1.2 var(--acid); letter-spacing: -.02em; color: var(--txt); transition: opacity .32s ease; transform-origin: 50% 50%; }
 .line.out { opacity: 0; }
 .w { display: none; }
-.w.on { display: inline-block; }
+.w.on { display: inline-block; position: relative; }
+.grain { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: var(--grain); background-size: calc(180 * var(--u));
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='.33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
 .dock { position: absolute; top: calc(764 * var(--u)); left: calc(132 * var(--u)); display: flex; gap: calc(22 * var(--u)); }
-.dock span { width: calc(58 * var(--u)); height: calc(58 * var(--u)); box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; color: #fff;
-  background: rgba(255, 255, 255, .1); border: 1px solid rgba(64, 64, 64, .5); backdrop-filter: blur(calc(7.5 * var(--u))); box-shadow: -1px 3px 6px rgba(0, 0, 0, .08); }
+.dock span { width: calc(58 * var(--u)); height: calc(58 * var(--u)); box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; color: var(--ui);
+  background: var(--btn); border: 1px solid var(--btn-line); backdrop-filter: blur(calc(7.5 * var(--u))); box-shadow: -1px 3px 6px rgba(0, 0, 0, .08); }
 .dock svg { width: calc(22 * var(--u)); height: calc(22 * var(--u)); }
 .dock span + span svg { width: calc(20 * var(--u)); height: calc(20 * var(--u)); }
 body.mic .dock span:first-child { background: rgba(255, 106, 43, .22); box-shadow: 0 0 0 calc(var(--live) * 12 * var(--u)) rgba(255, 106, 43, .22); }
 
 /* Shared emphasis: --e is loudness shaped 0..1, --fit shrinks a word that would leave the frame. */
-.w.on { --fs: 1; font-size: calc(36 * var(--u) * var(--fs) * var(--fit, 1)); }
+.w.on { --fs: 1; font-size: calc(30 * var(--u) * var(--fs) * var(--fit, 1)); }
 @keyframes pop { from { transform: scale(.55); opacity: 0; } }
 @keyframes rise { from { transform: translateY(calc(10 * var(--u))); opacity: 0; } }
 
 /* 01 Swell */
-[data-v="swell"] .w.on { --fs: calc(1 + var(--e) * 1.1); font-weight: calc(300 + var(--e) * 600); letter-spacing: calc(-.025em - var(--e) * .03em); animation: pop .45s cubic-bezier(.2, 1.6, .4, 1); }
+[data-v="swell"] .w.on { --fs: calc(1 + var(--e) * 1.1); font-weight: calc(250 + var(--e) * 650); letter-spacing: calc(-.02em - var(--e) * .03em); animation: pop .45s cubic-bezier(.2, 1.6, .4, 1); }
 
 /* 02 Poster */
 @keyframes slide { from { transform: translateX(calc(var(--dir, 1) * -30 * var(--u))); opacity: 0; } }
 [data-v="poster"] .stage { top: calc(130 * var(--u)); height: calc(600 * var(--u)); }
 [data-v="poster"] .line { text-align: left; line-height: 1.05; }
-[data-v="poster"] .w.on { --fs: calc(.75 + var(--e) * .6); font-weight: calc(350 + var(--e) * 550); animation: slide .35s cubic-bezier(.2, .9, .3, 1); }
-[data-v="poster"] .w.on.big { display: block; width: fit-content; font-size: calc(var(--px) * var(--u)); text-transform: uppercase; line-height: .9; letter-spacing: -.045em; }
+[data-v="poster"] .w.on { --fs: calc(.75 + var(--e) * .6); font-weight: calc(300 + var(--e) * 600); animation: slide .35s cubic-bezier(.2, .9, .3, 1); }
+[data-v="poster"] .w.on.big { display: block; width: fit-content; font-size: calc(var(--px) * var(--u)); text-transform: uppercase; line-height: .95; letter-spacing: -.035em; }
 [data-v="poster"] .w.on.big.right { margin-left: auto; --dir: -1; }
 
 /* 03 Drawl */
-[data-v="drawl"] .w.on { --fs: calc(1 + var(--e) * .3); font-weight: calc(300 + var(--e) * 550); letter-spacing: calc(-.025em + var(--e) * .1em); animation: rise .3s cubic-bezier(.2, .9, .3, 1); }
+[data-v="drawl"] .w.on { --fs: calc(1 + var(--e) * .3); font-weight: calc(250 + var(--e) * 600); letter-spacing: calc(-.02em + var(--e) * .08em); animation: rise .3s cubic-bezier(.2, .9, .3, 1); }
+
+/* ---------- looks: the louder the word (--e), the more it blurs, glows and melts ---------- */
+body:not([data-look="ghost"]) .heat { display: none; }
+
+/* Neon: hot pink tube light on a red room */
+[data-look="neon"] .screen { --txt: #ff5fe0; --ui: #ffd3f2; --btn: rgba(255, 120, 200, .12); --btn-line: rgba(255, 120, 200, .25); --grain: .22;
+  background: radial-gradient(115% 80% at 50% 48%, #380002 0%, #560004 50%, #9a0009 82%, #c3000f 100%); }
+[data-look="neon"] .line { text-transform: uppercase; letter-spacing: .02em; }
+[data-look="neon"] .w.on { color: #ffc4f3;
+  text-shadow: 0 0 calc((2 + var(--e) * 6) * var(--u)) #ff4fd8, 0 0 calc((8 + var(--e) * 22) * var(--u)) #ff22b0,
+               0 0 calc((22 + var(--e) * 50) * var(--u)) rgba(255, 20, 110, calc(.5 + var(--e) * .4));
+  filter: blur(calc(var(--e) * var(--e) * 2.2 * var(--u))) brightness(calc(1 + var(--live) * var(--e) * .35)); }
+
+/* Ghost: white type with a soft halo and a smeared reflection, on black film grain */
+[data-look="ghost"] .screen { --grain: .32; background: #060606; }
+[data-look="ghost"] .heat { opacity: .45; }
+[data-look="ghost"] .w.on { color: #f6f3ef;
+  text-shadow: 0 0 calc((3 + var(--e) * 9) * var(--u)) rgba(255, 255, 255, .5), calc(var(--e) * 12 * var(--u)) 0 calc(var(--e) * 9 * var(--u)) rgba(255, 255, 255, calc(var(--e) * .35));
+  filter: blur(calc(var(--e) * var(--e) * 2.4 * var(--u))); }
+[data-look="ghost"] .w.on::after { content: attr(data-t); position: absolute; left: 0; top: 0; pointer-events: none; transform-origin: 50% 100%;
+  translate: calc(var(--e) * -6 * var(--u)) calc(.45em + var(--e) * .15em); scale: 1.03 calc(.55 + var(--e) * .8);
+  filter: blur(calc((3 + var(--e) * 8) * var(--u))); opacity: calc(.2 + var(--e) * .45); }
+
+/* Liquid: black ink melting on pink-cream scanned paper */
+[data-look="liquid"] .screen { --txt: #140a0b; --ui: #2a1a1c; --btn: rgba(30, 10, 14, .06); --btn-line: rgba(30, 10, 14, .14); --grain: .4;
+  background: repeating-linear-gradient(0deg, rgba(120, 40, 50, .045) 0 1px, transparent 1px 3px), radial-gradient(90% 70% at 50% 45%, #fdf4f1, #f2d9d4); }
+[data-look="liquid"] .grain { mix-blend-mode: multiply; }
+[data-look="liquid"] .w.on { text-shadow: 0 0 calc((2 + var(--e) * 14) * var(--u)) rgba(222, 92, 104, calc(.2 + var(--e) * .65)); }
+[data-look="liquid"] .w.on[data-m="1"] { filter: var(--melt1); }
+[data-look="liquid"] .w.on[data-m="2"] { filter: var(--melt2); }
+[data-look="liquid"] .w.on[data-m="3"] { filter: var(--melt3); }
+[data-look="liquid"] .w.on[data-m="4"] { filter: var(--melt4); }
+.melt { position: absolute; width: 0; height: 0; }
+
+/* Focus: out-of-focus print with magenta and blue fringes on a pale haze */
+[data-look="focus"] .screen { --txt: #140f18; --ui: #261c24; --btn: rgba(30, 10, 30, .05); --btn-line: rgba(30, 10, 30, .12); --grain: .35;
+  background: radial-gradient(55% 35% at 32% 30%, #fff 0, transparent 70%), radial-gradient(60% 40% at 70% 62%, #fbe3ee 0, transparent 72%), #f2ebe7; }
+[data-look="focus"] .grain { mix-blend-mode: multiply; }
+[data-look="focus"] .w.on {
+  text-shadow: calc(var(--e) * -5 * var(--u)) calc(var(--e) * 3 * var(--u)) calc((2 + var(--e) * 14) * var(--u)) rgba(255, 30, 150, calc(.2 + var(--e) * .65)),
+               calc(var(--e) * 5 * var(--u)) 0 calc((2 + var(--e) * 10) * var(--u)) rgba(40, 70, 255, calc(var(--e) * .35));
+  filter: blur(calc((.25 + var(--e) * var(--e) * 3.2) * var(--u))); }
 
 /* ---------- full-size view ---------- */
 .backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(5, 3, 4, .88); backdrop-filter: blur(6px); }
@@ -112,11 +158,17 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
 
 <header class="top">
   <h1>Reply, <span>shouted</span></h1>
-  <p>Three ways for Die Hard's reply to shout. Words appear only as they're said, and each one's weight and size come from how loud it was. The demo voice plays scripted stress; switch to your mic and read the line aloud, shouting the words you want big.</p>
+  <p>Three ways for Die Hard's reply to shout. Words appear only as they're said; the louder a word, the bigger and heavier it gets, and the more it blurs, glows and melts. The demo voice plays scripted stress; switch to your mic and read the line aloud, shouting the words you want big.</p>
   <div class="bar" id="bar">
     <div class="seg" role="group" aria-label="Voice">
       <button type="button" data-action="demo" aria-pressed="true">Demo voice</button>
       <button type="button" data-action="mic" aria-pressed="false">My mic</button>
+    </div>
+    <div class="seg" role="group" aria-label="Look">
+      <button type="button" data-look-btn="neon" aria-pressed="true">Neon</button>
+      <button type="button" data-look-btn="ghost" aria-pressed="false">Ghost</button>
+      <button type="button" data-look-btn="liquid" aria-pressed="false">Liquid</button>
+      <button type="button" data-look-btn="focus" aria-pressed="false">Focus</button>
     </div>
     <button type="button" class="act" data-action="replay">Replay line</button>
     <button type="button" class="act" data-action="next">Next line</button>
@@ -144,6 +196,8 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
     { key: "drawl",  name: "Drawl",  note: "Loud words stretch their vowels: shruuuug." },
   ];
 
+  // Liquid look's four melt levels, in design units: warp distance and blur (x, y).
+  const MELT = [{ warp: 7, blur: [.4, 1.2] }, { warp: 14, blur: [.7, 2.4] }, { warp: 24, blur: [1.2, 3.6] }, { warp: 36, blur: [1.8, 5.4] }];
   const MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>';
   const END = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>';
   const hash = n => { const x = Math.sin(n * 12.9898) * 43758.5453; return x - Math.floor(x); };
@@ -168,13 +222,13 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
         if (w.e < .5) return;
         const n = Math.round((w.e - .4) * 8), base = w.e > .75 ? w.text.toUpperCase() : w.text;
         const m = base.match(/([aeiouyáéíóú]+)[^aeiouyáéíóú]*$/i);
-        if (!m) { w.el.textContent = base; return; }
+        if (!m) { w.el.textContent = w.el.dataset.t = base; return; }
         const at = m.index + m[1].length - 1;
         let k = 0;
         w.el.textContent = base;
         const grow = () => {
           if (k > n || !w.el.isConnected) return;
-          w.el.textContent = base.slice(0, at + 1) + base[at].repeat(k) + base.slice(at + 1);
+          w.el.textContent = w.el.dataset.t = base.slice(0, at + 1) + base[at].repeat(k) + base.slice(at + 1);
           p.fit(w);
           k++; setTimeout(grow, 55);
         };
@@ -196,6 +250,8 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
               <div class="cast" aria-hidden="true"><img class="side" src="assets/agent-1.png" alt=""><img class="main" src="assets/agent-2.png" alt=""><img class="side" src="assets/agent-3.png" alt=""></div>
               <span class="who" aria-hidden="true">Die Hard</span>
               <div class="stage"><p class="line" aria-live="off"></p></div>
+              <div class="grain"></div>
+              <svg class="melt" aria-hidden="true">${MELT.map((m, k) => `<filter id="melt${n}-${k + 1}" x="-30%" y="-70%" width="160%" height="240%"><feTurbulence type="fractalNoise" numOctaves="2" seed="${k * 3 + 2}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d"/></filter>`).join("")}</svg>
               <div class="dock" aria-hidden="true"><span>${MIC}</span><span>${END}</span></div>
             </div>
           </div>
@@ -207,6 +263,19 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
       this.stage = fig.querySelector(".stage");
       this.line = fig.querySelector(".line");
       this.words = [];
+      MELT.forEach((m, k) => this.screen.style.setProperty(`--melt${k + 1}`, `url(#melt${n}-${k + 1})`));
+      new ResizeObserver(() => this.sizeMelt()).observe(this.screen);
+    }
+    // SVG filters work in pixels; keep the melt the same size relative to the phone.
+    sizeMelt() {
+      const u = this.u();
+      if (!u) return;
+      this.screen.querySelectorAll(".melt filter").forEach((f, k) => {
+        const m = MELT[k];
+        f.querySelector("feTurbulence").setAttribute("baseFrequency", `${(.0099 / u).toFixed(4)} ${(.0248 / u).toFixed(4)}`);
+        f.querySelector("feDisplacementMap").setAttribute("scale", (m.warp * u).toFixed(2));
+        f.querySelector("feGaussianBlur").setAttribute("stdDeviation", `${(m.blur[0] * u).toFixed(2)} ${(m.blur[1] * u).toFixed(2)}`);
+      });
     }
     u() { return this.screen.clientWidth / 402; }
     setLine(words, li) {
@@ -224,6 +293,8 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
       if (!w) return;
       w.on = true; w.e = shape(level);
       w.el.style.setProperty("--e", w.e.toFixed(3));
+      w.el.dataset.t = w.text;                                  // Ghost's reflection
+      w.el.dataset.m = Math.min(4, Math.round(w.e * 4.4));       // Liquid's melt level
       w.el.classList.add("on");
       this.b.reveal?.(this, w);
       if (this.b.fit !== false) this.fit(w);
@@ -351,7 +422,7 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
     open = p; p.fig.classList.add("open");
     back = document.createElement("div"); back.className = "backdrop";
     bar = document.createElement("div"); bar.className = "viewbar";
-    bar.innerHTML = `<span class="name">${p.v.name}</span><button type="button" class="act" data-action="replay">Replay line</button><button type="button" class="act" data-action="next">Next line</button><button type="button" class="act" data-action="close">Close</button>`;
+    bar.innerHTML = `<span class="name">${p.v.name}</span>${document.querySelector('[aria-label="Look"]').outerHTML}<button type="button" class="act" data-action="replay">Replay line</button><button type="button" class="act" data-action="next">Next line</button><button type="button" class="act" data-action="close">Close</button>`;
     back.addEventListener("click", closePhone);
     document.body.append(back, bar);
     p.phone.setAttribute("aria-label", `${p.v.name}, full size`);
@@ -373,7 +444,18 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
     else if (a === "replay") startLine();
     else if (a === "next") nextLine();
     else if (a === "close") closePhone();
+    const look = e.target.closest("[data-look-btn]")?.dataset.lookBtn;
+    if (look) setLook(look);
   });
+
+  function setLook(look) {
+    document.body.dataset.look = look;
+    document.querySelectorAll("[data-look-btn]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lookBtn === look)));
+    try { localStorage.setItem("shout-look", look); } catch {}
+  }
+  let saved = null;
+  try { saved = localStorage.getItem("shout-look"); } catch {}
+  setLook(["neon", "ghost", "liquid", "focus"].includes(saved) ? saved : "neon");
 
   startLine();
   requestAnimationFrame(loop);

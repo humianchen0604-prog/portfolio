@@ -11,7 +11,8 @@
   snapshot from when it moved; make new changes there, not here.
 - `shout/`: **Reply, shouted**, three versions of the Figma "F3 · Reply" phone
   where Die Hard's reply shouts: words appear as they're said, and their weight,
-  size and stretch follow how loud each was (live mic or a demo voice). Read `shout/CLAUDE.md` first.
+  size, stretch and blur follow how loud each was (live mic or a demo voice), in
+  four blur looks. Read `shout/CLAUDE.md` first.
 
 ## Working here
 

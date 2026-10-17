@@ -2,8 +2,8 @@
 
 Three versions of the Figma "F3 · Reply" phone screen (file `phZYZx5gmbFyf7JNS5Geve`,
 nodes `91:4878` "F3 · 4 Reply" and `91:4862` "F3 · 3 Reply, word by word") where
-Die Hard's reply **shouts**: each word's weight, size or stretch comes from
-how loud it was said. The user asked for the character's line to shout (not their
+Die Hard's reply **shouts**: each word's weight, size or stretch, and how much
+it blurs, comes from how loud it was said. The user asked for the character's line to shout (not their
 own speech), emphasis from live mic loudness, on one gallery page.
 
 There were ten; the user kept Swell, Poster and Drawl and dropped Sideways,
@@ -33,6 +33,26 @@ or `python3 -m http.server`) and open it in Chrome or Safari for the mic.
 
 Swell (weight and size), Poster (loud words get their own full-width line),
 Drawl (loud words stretch their vowels). Captions in `VARIANTS`.
+
+## Type and looks
+
+The reply is set in **Unbounded** (Google Fonts, 200–900), asked for as "more
+acidic"; base size 30u since it runs wide. The page chrome stays Geist.
+
+A **Look** switcher (header and full-size view, remembered in localStorage) sets
+`body[data-look]`, from the user's four reference images. In every look,
+**shouting melts it**: the louder the word, the more it blurs, glows or warps;
+quiet words stay crisp. Each look also sets the screen background (by request):
+
+- **Neon**: hot-pink glowing caps on a red room with brighter red edges.
+- **Ghost**: white type with a halo, a sideways smear and a blurred reflection
+  below (`::after` from `data-t`), on black grain; the only look with the heat floor.
+- **Liquid**: black ink warped by per-phone SVG filters (`.melt`, four levels from
+  `data-m`; `sizeMelt()` rescales them so the melt is the same at any phone size),
+  pink bleed, on pink-cream scanlines.
+- **Focus**: out-of-focus print with magenta/blue fringes on a pale haze.
+
+Film grain is an SVG-noise overlay (`.grain`), strength per look.
 
 ## Assets
 
