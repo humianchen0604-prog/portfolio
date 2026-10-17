@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Memory Temperature</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* From the Figma file "Designing-Shits" (iPhone 17 - 9, node 94:4083). */
+    --night: #0f0100;            /* frame fill */
+    --ember: rgb(212 34 12);     /* Heat band */
+    --glow-blue: #2f5bff;        /* Thermal word · Glow blue */
+    --glow-orange: #ff5a1f;      /* Thermal word · Glow orange */
+    --glow-cream: #fff8ee;       /* Thermal word · Glow yellow */
+    --field: rgba(0 4 26 / 0.6); /* Composer field */
+    --hairline: rgba(255 255 255 / 0.08);
+    --geist: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --mono: "Geist Mono", ui-monospace, monospace;
+    --sf: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: #070302;
+    color: var(--glow-cream);
+    font-family: var(--geist);
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+
+  .page {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    padding: 24px 16px;
+  }
+
+  /* ---------- Phone (402 × 874 design, every size in --u) ---------- */
+  .stage {
+    width: min(402px, calc(100vw - 32px), calc((100vh - 48px) * 402 / 874));
+    aspect-ratio: 402 / 874;
+    flex: none;
+    container-type: inline-size;
+  }
+  .phone {
+    --u: calc(100cqw / 402);
+    --heat: 0.6;
+    --frost: 0.4;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: calc(54 * var(--u));
+    background: var(--night);
+    box-shadow: 0 0 0 calc(10 * var(--u)) #1a1514, 0 0 0 calc(11 * var(--u)) #2c2522, 0 40px 120px rgba(0 0 0 / 0.6);
+    isolation: isolate;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .u { position: absolute; }
+
+  /* The whole space carries its temperature: heat pools at the bottom,
+     frost gathers at the top, and their balance follows the average memory. */
+  .bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .horizon-glow {
+    position: absolute;
+    left: calc(-639 * var(--u)); top: calc(194 * var(--u));
+    width: calc(1686 * var(--u)); height: calc(1296 * var(--u));
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255 90 31 / 0.55), rgba(212 34 12 / 0.28) 45%, rgba(15 1 0 / 0) 72%);
+    opacity: calc(0.15 + var(--heat) * 0.85);
+    translate: 0 calc((1 - var(--heat)) * 140 * var(--u));
+    transition: opacity 0.6s, translate 0.6s;
+  }
+  .heat-band {
+    position: absolute; left: 0; right: 0;
+    top: calc(507 * var(--u)); height: calc(367 * var(--u));
+    background: linear-gradient(rgba(212 34 12 / 0), rgba(212 34 12 / 0.22));
+    opacity: calc(0.3 + var(--heat) * 1.4);
+    transition: opacity 0.6s;
+  }
+  .frost-band {
+    position: absolute; left: 0; right: 0; top: 0;
+    height: calc(420 * var(--u));
+    background:
+      radial-gradient(120% 70% at 50% 0%, rgba(47 91 255 / 0.32), rgba(47 91 255 / 0) 70%),
+      linear-gradient(rgba(190 220 255 / 0.10), rgba(190 220 255 / 0));
+    opacity: calc(0.15 + var(--frost) * 1.1);
+    transition: opacity 0.6s;
+  }
+  .film-grain {
+    position: absolute; inset: 0;
+    opacity: 0.07;
+    mix-blend-mode: screen;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size: calc(160 * var(--u));
+  }
+
+  /* Status bar */
+  .status {
+    left: 0; right: 0; top: 0; height: calc(54 * var(--u));
+    display: flex; align-items: center; justify-content: space-between;
+    padding: calc(6 * var(--u)) calc(34 * var(--u)) 0 calc(48 * var(--u));
+    font: 600 calc(17 * var(--u)) var(--sf);
+    letter-spacing: -0.02em;
+  }
+  .status .island {
+    position: absolute; left: 50%; top: calc(11 * var(--u));
+    width: calc(124 * var(--u)); height: calc(36 * var(--u));
+    translate: -50% 0; border-radius: 99px; background: #000;
+  }
+  .status .icons { display: flex; gap: calc(6 * var(--u)); align-items: center; }
+  .status svg { height: calc(12 * var(--u)); width: auto; fill: currentColor; }
+
+  /* Header: More · title · time-lapse */
+  .circle-btn {
+    width: calc(46 * var(--u)); height: calc(46 * var(--u));
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(255 248 238 / 0.06);
+    border: 1px solid var(--hairline);
+    backdrop-filter: blur(calc(8 * var(--u)));
+    -webkit-backdrop-filter: blur(calc(8 * var(--u)));
+    padding: 0;
+  }
+  .circle-btn svg { width: calc(20 * var(--u)); height: calc(20 * var(--u)); }
+  .more { left: calc(24 * var(--u)); top: calc(58 * var(--u)); }
+  .lapse { right: calc(24 * var(--u)); top: calc(58 * var(--u)); }
+  .lapse[aria-pressed="true"] { background: rgba(255 90 31 / 0.25); border-color: rgba(255 90 31 / 0.5); }
+  .title {
+    left: calc(80 * var(--u)); right: calc(80 * var(--u)); top: calc(60 * var(--u));
+    text-align: center;
+  }
+  .title h1 {
+    margin: 0;
+    font: 600 calc(19 * var(--u)) / 1.15 var(--geist);
+    letter-spacing: -0.02em;
+  }
+  .title p {
+    margin: calc(4 * var(--u)) 0 0;
+    font: 400 calc(12.5 * var(--u)) / 1.2 var(--geist);
+    color: rgba(255 248 238 / 0.55);
+    white-space: nowrap;
+  }
+  .title p b { font-weight: 500; }
+
+  /* View switcher: the pill toggle, four segments named after Lava icons */
+  .views {
+    left: calc(24 * var(--u)); top: calc(114 * var(--u));
+    width: calc(354 * var(--u)); height: calc(46 * var(--u));
+    border-radius: 99px;
+    background: var(--field);
+    border: 1px solid var(--hairline);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    padding: calc(3 * var(--u));
+    backdrop-filter: blur(calc(8 * var(--u)));
+    -webkit-backdrop-filter: blur(calc(8 * var(--u)));
+  }
+  .views .knob {
+    position: absolute; top: calc(3 * var(--u)); bottom: calc(3 * var(--u));
+    left: calc(3 * var(--u));
+    width: calc((354 - 8) / 4 * var(--u));
+    border-radius: 99px;
+    background: rgba(255 248 238 / 0.12);
+    box-shadow: inset 0 0 0 1px rgba(255 248 238 / 0.10);
+    transition: translate 0.35s cubic-bezier(0.2, 0.9, 0.25, 1);
+  }
+  .views button {
+    position: relative;
+    display: flex; align-items: center; justify-content: center; gap: calc(5 * var(--u));
+    background: none; border: 0; padding: 0;
+    font: 500 calc(11.5 * var(--u)) var(--geist);
+    color: rgba(255 248 238 / 0.5);
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .views button[aria-selected="true"] { color: var(--glow-cream); }
+  .views svg { width: calc(18 * var(--u)); height: calc(18 * var(--u)); flex: none; }
+
+  /* Content area: y 170–700 */
+  .content {
+    left: 0; top: calc(170 * var(--u));
+    width: calc(402 * var(--u)); height: calc(530 * var(--u));
+  }
+  .view { position: absolute; inset: 0; display: none; }
+  .view.on { display: block; animation: view-in 0.4s ease-out; }
+  @keyframes view-in { from { opacity: 0; filter: blur(4px); } }
+
+  /* ---------- A memory, wherever it is drawn ---------- */
+  .mem {
+    position: absolute;
+    background: none; border: 0; padding: 0;
+    translate: -50% -50%;
+    transition: left 0.45s cubic-bezier(0.3, 0.8, 0.3, 1), top 0.45s cubic-bezier(0.3, 0.8, 0.3, 1);
+  }
+  .orb {
+    position: relative;
+    display: grid; place-items: center;
+    width: calc(var(--s) * var(--u)); height: calc(var(--s) * var(--u));
+    border-radius: var(--br);
+    background:
+      radial-gradient(70% 70% at 35% 30%, var(--hi), transparent 70%),
+      radial-gradient(circle at 50% 60%, var(--core), var(--edge) 92%);
+    box-shadow:
+      0 0 calc(var(--t) * 34 * var(--u)) calc(var(--t) * 2 * var(--u)) var(--glow),
+      inset 0 0 0 1px rgba(255 255 255 / calc(0.06 + (1 - var(--t)) * 0.35));
+    transition: width 0.45s, height 0.45s, border-radius 0.6s, box-shadow 0.45s, background 0.45s;
+  }
+  .orb.liquid { animation: wobble var(--wob) ease-in-out infinite alternate; }
+  @keyframes wobble {
+    0%   { border-radius: 52% 48% 46% 54% / 50% 55% 45% 50%; }
+    50%  { border-radius: 45% 55% 56% 44% / 56% 44% 56% 44%; }
+    100% { border-radius: 55% 45% 50% 50% / 44% 52% 48% 56%; }
+  }
+  .orb .ink {
+    width: calc(var(--i, 24) * var(--u)); height: calc(var(--i, 24) * var(--u));
+    color: var(--ink);
+    position: relative; z-index: 2;
+  }
+  /* Ice: crystalline hatch, a bright rim and a blur, strongest when frozen */
+  .orb .frost {
+    position: absolute; inset: 0; border-radius: inherit; z-index: 1;
+    opacity: var(--ice);
+    background:
+      radial-gradient(60% 50% at 28% 22%, rgba(255 255 255 / 0.75), transparent 60%),
+      repeating-linear-gradient(60deg, rgba(255 255 255 / 0.16) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(-60deg, rgba(255 255 255 / 0.12) 0 1px, transparent 1px 9px);
+    box-shadow: inset 0 0 calc(10 * var(--u)) rgba(225 242 255 / 0.9), inset 0 0 0 1px rgba(235 247 255 / 0.85);
+    backdrop-filter: blur(calc(2 * var(--u)));
+    -webkit-backdrop-filter: blur(calc(2 * var(--u)));
+    transition: opacity 0.45s;
+  }
+  /* Molten: beads rising off the top, like the Rising Bubbles glyph */
+  .orb .beads { position: absolute; inset: 0; pointer-events: none; display: none; }
+  .orb.molten .beads { display: block; }
+  .orb .beads i {
+    position: absolute; left: 50%; bottom: 70%;
+    width: calc(6 * var(--u)); height: calc(6 * var(--u));
+    border-radius: 50%; background: var(--hi);
+    box-shadow: 0 0 calc(8 * var(--u)) var(--glow);
+    animation: bead 2.4s ease-in infinite;
+    opacity: 0;
+  }
+  .orb .beads i:nth-child(2) { left: 30%; width: calc(4 * var(--u)); height: calc(4 * var(--u)); animation-delay: 0.8s; }
+  .orb .beads i:nth-child(3) { left: 68%; width: calc(5 * var(--u)); height: calc(5 * var(--u)); animation-delay: 1.6s; }
+  @keyframes bead {
+    0%   { translate: 0 0; opacity: 0; }
+    20%  { opacity: 0.9; }
+    100% { translate: 0 calc(-30 * var(--u)); opacity: 0; scale: 0.4; }
+  }
+  .mem.fresh .orb { animation: born 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.3) both, wobble var(--wob) ease-in-out infinite alternate; }
+  @keyframes born { from { scale: 0.2; filter: blur(8px) brightness(2); } }
+  .mem.reheat .orb { animation: reheat 1.1s ease-out; }
+  @keyframes reheat {
+    0%   { filter: brightness(3) saturate(1.5); scale: 1.25; }
+    100% { filter: none; scale: 1; }
+  }
+
+  /* Label chip under an orb (like the "Fuji 富士" chips in the reference) */
+  .tag {
+    position: absolute; left: 50%; top: calc(100% + 6 * var(--u));
+    translate: -50% 0;
+    display: flex; align-items: center; gap: calc(5 * var(--u));
+    padding: calc(4 * var(--u)) calc(8 * var(--u)) calc(4 * var(--u)) calc(9 * var(--u));
+    border-radius: 99px;
+    background: rgba(10 4 6 / 0.55);
+    border: 1px solid var(--hairline);
+    backdrop-filter: blur(calc(6 * var(--u)));
+    -webkit-backdrop-filter: blur(calc(6 * var(--u)));
+    font: 500 calc(11 * var(--u)) / 1 var(--geist);
+    white-space: nowrap;
+    max-width: calc(112 * var(--u));
+    opacity: calc(0.55 + var(--t) * 0.45);
+    transition: opacity 0.45s;
+  }
+  .tag b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
+  .mem.iced .tag { display: none; }
+  .tag i {
+    font: 500 calc(10 * var(--u)) var(--mono); font-style: normal;
+    color: var(--deg);
+  }
+
+  /* ---------- Lava Lamp view (thermal map) ---------- */
+  .lamp-scale {
+    position: absolute; left: calc(10 * var(--u)); top: calc(8 * var(--u)); bottom: calc(10 * var(--u));
+    width: calc(3 * var(--u)); border-radius: 99px;
+    background: linear-gradient(#d9ecff, #5f86ff 20%, #3b2c78 42%, #7a1631 58%, #d4220c 75%, #ff5a1f 90%, #ffe7c2);
+    opacity: 0.55;
+  }
+  .lamp-label {
+    position: absolute; left: calc(20 * var(--u));
+    font: 500 calc(9 * var(--u)) var(--mono); letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255 248 238 / 0.4);
+  }
+
+  /* ---------- Bubble Foam view (gradient cards) ---------- */
+  .scroll {
+    position: absolute; inset: 0;
+    overflow-y: auto; overflow-x: hidden;
+    scrollbar-width: none;
+    padding: 0 calc(24 * var(--u)) calc(24 * var(--u));
+    -webkit-mask-image: linear-gradient(transparent, #000 calc(14 * var(--u)), #000 calc(100% - 24 * var(--u)), transparent);
+    mask-image: linear-gradient(transparent, #000 calc(14 * var(--u)), #000 calc(100% - 24 * var(--u)), transparent);
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+  .group-head {
+    display: flex; align-items: baseline; gap: calc(4 * var(--u));
+    margin: calc(18 * var(--u)) 0 calc(10 * var(--u));
+    font: 500 calc(20 * var(--u)) var(--geist); letter-spacing: -0.02em;
+  }
+  .group-head sup { font-size: calc(11 * var(--u)); color: rgba(255 248 238 / 0.5); }
+  .group-head small {
+    margin-left: auto;
+    font: 400 calc(11 * var(--u)) var(--geist); color: rgba(255 248 238 / 0.45);
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: calc(10 * var(--u)); }
+  .card {
+    position: relative; overflow: hidden;
+    height: calc(var(--h) * var(--u));
+    border-radius: calc(26 * var(--u));
+    border: 0; padding: calc(14 * var(--u));
+    text-align: center;
+    background:
+      radial-gradient(110% 80% at 50% 105%, var(--core2), transparent 70%),
+      radial-gradient(90% 70% at 15% -5%, var(--core), transparent 70%),
+      radial-gradient(90% 70% at 100% 40%, var(--edge2), transparent 70%),
+      var(--edge);
+    box-shadow: 0 calc(10 * var(--u)) calc(30 * var(--u)) calc(-12 * var(--u)) var(--glow), inset 0 0 0 1px rgba(255 255 255 / 0.08);
+    color: var(--txt);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .card .name { font: 500 calc(13 * var(--u)) / 1.2 var(--geist); letter-spacing: -0.01em; text-wrap: balance; }
+  .card .meta { margin-top: calc(3 * var(--u)); font: 400 calc(11 * var(--u)) var(--geist); opacity: 0.7; }
+  .card .ink { width: calc(32 * var(--u)); height: calc(32 * var(--u)); margin: auto 0; color: var(--txt); opacity: 0.9; }
+  .card .deg { font: 500 calc(10 * var(--u)) var(--mono); letter-spacing: 0.08em; opacity: 0.75; }
+  .card .frost { position: absolute; inset: 0; opacity: var(--ice); pointer-events: none;
+    background:
+      radial-gradient(70% 40% at 30% 0%, rgba(255 255 255 / 0.55), transparent 70%),
+      repeating-linear-gradient(60deg, rgba(255 255 255 / 0.12) 0 1px, transparent 1px 8px),
+      repeating-linear-gradient(-60deg, rgba(255 255 255 / 0.09) 0 1px, transparent 1px 11px);
+    box-shadow: inset 0 0 calc(18 * var(--u)) rgba(225 242 255 / 0.8), inset 0 0 0 1px rgba(235 247 255 / 0.7);
+    border-radius: inherit;
+  }
+  .card > :not(.frost) { position: relative; }
+
+  /* ---------- Star Orbit view (radial core) ---------- */
+  .orbit-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .ring-label {
+    position: absolute; translate: -50% -50%;
+    font: 500 calc(8.5 * var(--u)) var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255 248 238 / 0.38);
+    padding: 0 calc(4 * var(--u));
+    background: var(--night);
+    white-space: nowrap;
+  }
+  .core-head {
+    position: absolute; left: 50%; translate: -50% 0;
+    width: calc(320 * var(--u));
+    text-align: center;
+    pointer-events: none;
+  }
+  .core-head > span {
+    font: 500 calc(9 * var(--u)) var(--mono); letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(255 248 238 / 0.42);
+  }
+  .core-word {
+    margin-top: calc(6 * var(--u));
+    font: 700 calc(22 * var(--u)) / 1 var(--geist); letter-spacing: -0.045em;
+  }
+
+  /* Thermal word: three stacked copies, blue · orange · cream (Figma 94:4107) */
+  .thermal { display: grid; }
+  .thermal > span { grid-area: 1 / 1; }
+  .thermal .g-blue   { color: var(--far, var(--glow-blue));     filter: blur(calc(12 * var(--u))); }
+  .thermal .g-orange { color: var(--mid, var(--glow-orange));   filter: blur(calc(5.5 * var(--u))); }
+  .thermal .g-cream  { color: var(--near, var(--glow-cream));   filter: blur(calc(1.5 * var(--u))); }
+
+  /* ---------- Memory Chain view (strata) ---------- */
+  .chain .scroll { padding-top: calc(16 * var(--u)); }
+  .chain-note {
+    font: 500 calc(9 * var(--u)) var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255 248 238 / 0.4);
+    display: flex; justify-content: space-between;
+    margin: calc(4 * var(--u)) calc(4 * var(--u)) calc(10 * var(--u));
+  }
+  .layer {
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; gap: calc(10 * var(--u));
+    width: 100%;
+    height: calc(var(--h) * var(--u));
+    margin-bottom: calc(5 * var(--u));
+    padding: 0 calc(14 * var(--u));
+    border: 0;
+    border-radius: calc(var(--r) * var(--u));
+    text-align: left;
+    color: var(--txt);
+    background:
+      radial-gradient(60% 140% at 0% 50%, var(--core), transparent 75%),
+      linear-gradient(90deg, var(--edge2), var(--edge));
+    box-shadow: 0 0 calc(var(--t) * 22 * var(--u)) calc(-4 * var(--u)) var(--glow), inset 0 0 0 1px rgba(255 255 255 / 0.07);
+    transition: height 0.45s, border-radius 0.45s;
+  }
+  .layer .ink { width: calc(var(--i) * var(--u)); height: calc(var(--i) * var(--u)); flex: none; }
+  .layer .name { flex: 1; min-width: 0; font: 500 calc(var(--fs) * var(--u)) / 1.15 var(--geist); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .layer .meta { font: 400 calc(10.5 * var(--u)) var(--mono); opacity: 0.7; white-space: nowrap; }
+  .layer .frost { position: absolute; inset: 0; opacity: var(--ice); pointer-events: none; border-radius: inherit;
+    background: repeating-linear-gradient(90deg, rgba(255 255 255 / 0.10) 0 1px, transparent 1px 5px),
+      linear-gradient(rgba(255 255 255 / 0.25), transparent 60%);
+    box-shadow: inset 0 0 0 1px rgba(235 247 255 / 0.6);
+  }
+  .layer > :not(.frost) { position: relative; }
+
+  /* ---------- Time scrub ---------- */
+  .scrub {
+    left: calc(24 * var(--u)); top: calc(706 * var(--u));
+    width: calc(354 * var(--u)); height: calc(56 * var(--u));
+  }
+  .scrub .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font: 500 calc(9 * var(--u)) var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255 248 238 / 0.42);
+  }
+  .scrub .row output {
+    font: 500 calc(12 * var(--u)) var(--geist); letter-spacing: -0.01em; text-transform: none;
+    color: var(--glow-cream);
+  }
+  .scrub input {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: calc(28 * var(--u)); margin: calc(4 * var(--u)) 0 0;
+    background: transparent;
+    cursor: ew-resize;
+  }
+  .scrub input::-webkit-slider-runnable-track {
+    height: calc(6 * var(--u)); border-radius: 99px;
+    background: linear-gradient(90deg, #ffe7c2, #ff5a1f 10%, #d4220c 25%, #7a1631 42%, #3b2c78 60%, #5f86ff 80%, #d9ecff);
+  }
+  .scrub input::-moz-range-track {
+    height: calc(6 * var(--u)); border-radius: 99px;
+    background: linear-gradient(90deg, #ffe7c2, #ff5a1f 10%, #d4220c 25%, #7a1631 42%, #3b2c78 60%, #5f86ff 80%, #d9ecff);
+  }
+  .scrub input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: calc(22 * var(--u)); height: calc(22 * var(--u)); margin-top: calc(-8 * var(--u));
+    border-radius: 50%; background: var(--glow-cream);
+    box-shadow: 0 0 0 calc(4 * var(--u)) rgba(255 248 238 / 0.18), 0 2px 10px rgba(0 0 0 / 0.5);
+  }
+  .scrub input::-moz-range-thumb {
+    width: calc(22 * var(--u)); height: calc(22 * var(--u)); border: 0;
+    border-radius: 50%; background: var(--glow-cream);
+    box-shadow: 0 0 0 calc(4 * var(--u)) rgba(255 248 238 / 0.18), 0 2px 10px rgba(0 0 0 / 0.5);
+  }
+
+  /* ---------- Composer (Figma 94:4094) ---------- */
+  .composer {
+    left: calc(24 * var(--u)); top: calc(780 * var(--u));
+    width: calc(354 * var(--u)); height: calc(52 * var(--u));
+    display: flex; gap: calc(12 * var(--u));
+    margin: 0;
+  }
+  .field {
+    position: relative; flex: 1;
+    display: flex; align-items: center; gap: calc(10 * var(--u));
+    padding: 0 calc(16 * var(--u));
+    border-radius: calc(56 * var(--u));
+    background: var(--field);
+    border: 0.84px solid var(--hairline);
+    backdrop-filter: blur(8.4px);
+    -webkit-backdrop-filter: blur(8.4px);
+  }
+  .field svg { width: calc(22 * var(--u)); height: calc(22 * var(--u)); flex: none; opacity: 0.8; }
+  .field input {
+    flex: 1; min-width: 0;
+    border: 0; outline: 0; background: none;
+    font: 400 calc(16 * var(--u)) var(--geist);
+    color: var(--glow-cream);
+  }
+  .field input::placeholder { color: rgba(255 255 255 / 0.5); }
+  .mic {
+    width: calc(52 * var(--u)); height: calc(52 * var(--u)); flex: none;
+    border-radius: 50%; border: 0; padding: 0;
+    display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 120%, #c4501e, #2a0a04 60%, #120302);
+    box-shadow: inset 0 1px 0 rgba(255 255 255 / 0.18), 0 0 calc(24 * var(--u)) rgba(255 90 31 / 0.35);
+  }
+  .mic svg { width: calc(22 * var(--u)); height: calc(22 * var(--u)); }
+  .home {
+    left: 50%; bottom: calc(8 * var(--u)); translate: -50% 0;
+    width: calc(140 * var(--u)); height: calc(5 * var(--u));
+    border-radius: 99px; background: rgba(255 248 238 / 0.85);
+  }
+
+  /* ---------- Detail sheet ---------- */
+  .scrim {
+    position: absolute; inset: 0; z-index: 10;
+    background: rgba(5 2 2 / 0.45);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .sheet {
+    position: absolute; left: calc(10 * var(--u)); right: calc(10 * var(--u)); bottom: calc(10 * var(--u));
+    z-index: 11;
+    border-radius: calc(44 * var(--u));
+    padding: calc(26 * var(--u)) calc(24 * var(--u)) calc(22 * var(--u));
+    background: rgba(18 8 8 / 0.82);
+    border: 1px solid var(--hairline);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    translate: 0 110%;
+    transition: translate 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+  }
+  .phone.sheet-open .scrim { opacity: 1; pointer-events: auto; }
+  .phone.sheet-open .sheet { translate: 0 0; }
+  .sheet .grab { width: calc(36 * var(--u)); height: calc(5 * var(--u)); border-radius: 99px; background: rgba(255 248 238 / 0.25); margin: calc(-14 * var(--u)) auto calc(16 * var(--u)); }
+  .sheet .stage-line { font: 500 calc(10 * var(--u)) var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--deg); display: flex; align-items: center; gap: calc(6 * var(--u)); }
+  .sheet .stage-line svg { width: calc(18 * var(--u)); height: calc(18 * var(--u)); }
+  .sheet .deg-big { margin: calc(10 * var(--u)) 0 calc(4 * var(--u)); font: 700 calc(64 * var(--u)) / 0.92 var(--geist); letter-spacing: -0.05em; }
+  .sheet h2 { margin: calc(10 * var(--u)) 0 0; font: 600 calc(21 * var(--u)) / 1.15 var(--geist); letter-spacing: -0.02em; }
+  .sheet .who { margin: calc(6 * var(--u)) 0 0; font: 400 calc(13 * var(--u)) / 1.35 var(--geist); color: rgba(255 248 238 / 0.6); }
+  .sheet .desc {
+    margin: calc(16 * var(--u)) 0 0; padding: calc(12 * var(--u)) calc(14 * var(--u));
+    border-radius: calc(18 * var(--u)); background: rgba(255 248 238 / 0.05);
+    font: 400 calc(12.5 * var(--u)) / 1.4 var(--geist); color: rgba(255 248 238 / 0.75);
+  }
+  .sheet .desc em { font-style: normal; color: rgba(255 248 238 / 0.45); display: block; margin-bottom: calc(3 * var(--u)); font: 500 calc(9 * var(--u)) var(--mono); letter-spacing: 0.14em; text-transform: uppercase; }
+  .sheet .actions { display: flex; gap: calc(10 * var(--u)); margin-top: calc(18 * var(--u)); }
+  .sheet .actions button {
+    flex: 1; height: calc(52 * var(--u)); border-radius: 99px;
+    display: flex; align-items: center; justify-content: center; gap: calc(8 * var(--u));
+    font: 500 calc(15 * var(--u)) var(--geist);
+    border: 1px solid var(--hairline);
+    background: rgba(255 248 238 / 0.07);
+  }
+  .sheet .actions .primary { background: var(--glow-cream); color: #1b0700; border-color: transparent; }
+  .sheet .actions svg { width: calc(22 * var(--u)); height: calc(22 * var(--u)); }
+
+  /* ---------- Notes beside the phone ---------- */
+  .notes {
+    width: 340px; flex: none;
+    color: rgba(255 248 238 / 0.78);
+    font: 400 14px / 1.5 var(--geist);
+  }
+  .notes h2 { margin: 0 0 6px; font: 600 22px / 1.2 var(--geist); letter-spacing: -0.02em; color: var(--glow-cream); }
+  .notes h3 { margin: 22px 0 8px; font: 500 10px var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255 248 238 / 0.45); }
+  .notes p { margin: 0 0 8px; }
+  .notes ul { margin: 0; padding: 0; list-style: none; }
+  .legend li { display: grid; grid-template-columns: 34px 1fr; gap: 0 12px; align-items: center; margin-bottom: 10px; }
+  .legend .sw { grid-row: span 2; width: 34px; height: 34px; border-radius: var(--br); display: grid; place-items: center;
+    background: radial-gradient(70% 70% at 35% 30%, var(--hi), transparent 70%), radial-gradient(circle at 50% 60%, var(--core), var(--edge) 92%);
+    box-shadow: 0 0 calc(var(--t) * 18px) var(--glow); }
+  .legend .sw svg { width: 18px; height: 18px; color: var(--ink); }
+  .legend b { font-weight: 500; color: var(--glow-cream); }
+  .legend span { font-size: 12.5px; color: rgba(255 248 238 / 0.55); }
+  .cues li { padding: 7px 0; border-top: 1px solid rgba(255 248 238 / 0.08); font-size: 13px; }
+  .cues b { font-weight: 500; color: var(--glow-cream); }
+  .try li { font-size: 13px; padding-left: 14px; position: relative; margin-bottom: 4px; }
+  .try li::before { content: "→"; position: absolute; left: 0; color: var(--glow-orange); }
+  @media (max-width: 860px) {
+    .page { flex-direction: column; }
+    .notes { width: min(402px, 100%); }
+  }
+</style>
+</head>
+<body>
+<!-- Lava icons, Bold weight, exported from the Figma components (Lava/NN, nodes 92:26xx).
+     Paths unchanged; fill follows currentColor like the icon/ink variable. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="lava-01" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M25.4498 3.48019C27.0198 3.26019 28.2798 4.79019 27.7898 6.29019C27.5598 6.98019 26.9698 7.46019 26.3798 7.84019C25.9698 8.11019 25.3998 8.37019 25.3498 8.92019C25.2698 9.86019 25.9898 10.8302 26.3898 11.6302C26.9698 12.8202 27.3398 14.0902 27.4998 15.4002C28.2598 21.7202 23.7798 27.5402 17.4798 28.4302C10.8898 29.3602 4.76978 24.5402 4.14978 17.9202C4.01978 16.5402 4.12978 15.1302 4.48978 13.7902C4.85978 12.3702 5.50978 11.0202 6.37978 9.84019C8.89978 6.42019 13.1698 4.60019 17.3898 5.16019C18.2898 5.28019 19.1798 5.51019 20.0298 5.83019C20.7498 6.10019 21.6098 6.52019 22.3998 6.42019C23.0898 6.34019 23.2798 5.58019 23.5598 5.06019C23.9498 4.29019 24.5598 3.61019 25.4498 3.48019ZM12.9098 8.73019C13.0398 8.62019 13.0498 8.86019 13.0598 8.92019C13.1098 9.27019 13.1398 9.60019 13.2398 9.94019C13.4598 10.7402 13.8798 11.4902 14.4398 12.1002C15.0698 12.8002 15.8898 13.3102 16.7798 13.6002C17.1298 13.7102 17.4798 13.7802 17.8398 13.8102C17.9298 13.8202 18.1698 13.7902 18.1698 13.9202C18.1698 14.0502 17.9598 14.0202 17.8798 14.0302C17.5798 14.0502 17.2898 14.1002 16.9998 14.1802C16.2498 14.3802 15.5398 14.7502 14.9498 15.2502C14.1998 15.8802 13.6298 16.7202 13.3098 17.6502C13.1998 17.9902 13.1198 18.3402 13.0798 18.6902C13.0698 18.8002 13.0998 19.0402 13.0098 19.1102C12.8798 19.2202 12.8698 18.9802 12.8598 18.9202C12.8098 18.5702 12.7798 18.2402 12.6798 17.9002C12.4598 17.1002 12.0398 16.3502 11.4798 15.7402C10.8498 15.0402 10.0298 14.5302 9.13978 14.2402C8.78978 14.1302 8.43978 14.0602 8.07978 14.0302C7.98978 14.0202 7.74978 14.0502 7.74978 13.9202C7.74978 13.7902 7.95978 13.8202 8.03978 13.8102C8.33978 13.7902 8.62978 13.7402 8.91978 13.6602C9.66978 13.4602 10.3798 13.0902 10.9698 12.5902C11.7198 11.9602 12.2898 11.1202 12.6098 10.1902C12.7198 9.85019 12.7998 9.50019 12.8398 9.15019C12.8498 9.04019 12.8198 8.80019 12.9098 8.73019Z"/></symbol>
+  <symbol id="lava-02" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M19.0601 2.3999C25.2601 1.8799 30.2501 7.5499 28.9401 13.6399C28.6601 14.9699 28.0801 16.2299 27.2601 17.3099C26.8101 17.9099 25.9101 18.5699 25.7001 19.2799C25.5101 19.9599 26.0801 20.5699 26.3501 21.1499C26.7101 21.9199 26.6601 22.8399 26.2301 23.5699C25.3201 25.0999 23.1501 25.2199 22.0001 23.8999C21.6601 23.4899 21.4301 23.0099 21.1101 22.5899C20.9701 22.3999 20.8001 22.2399 20.5501 22.3299C20.2101 22.4599 20.0801 23.0199 19.9801 23.3199C19.6901 24.1699 19.3801 24.9899 18.8901 25.7499C17.4901 27.9699 15.0601 29.4299 12.4401 29.6099C7.5801 29.9499 3.4201 26.0399 3.4901 21.1599C3.5001 20.1799 3.6901 19.2099 4.0401 18.2999C4.3201 17.5599 4.7901 16.8599 4.7301 16.0399C4.6701 15.0199 3.8001 14.2299 3.4001 13.3399C2.5901 11.5099 2.6801 9.3699 3.6401 7.6199C4.8201 5.4699 7.1901 4.1599 9.6401 4.2999C10.8001 4.3599 11.9301 4.9699 13.1001 4.7199C13.9901 4.5299 14.6801 3.8699 15.4701 3.4499C16.5801 2.8699 17.8101 2.5099 19.0601 2.3999ZM19.4901 3.7199C23.5101 3.5499 27.1101 6.4999 27.7201 10.4699C28.1301 13.1599 27.0801 16.1799 24.8701 17.8499C24.3401 18.2499 23.7101 18.4999 23.0901 18.7499C22.5101 18.9799 21.8801 19.3099 21.2401 19.3299C20.6101 19.3499 20.1801 18.9499 19.8401 18.4599C19.2301 17.5899 18.8501 16.6099 18.1401 15.7999C17.4901 15.0399 16.2501 14.3199 15.8301 13.5099C15.3101 12.5199 15.8001 11.0799 15.6701 9.9599C15.5101 8.7099 14.6301 7.2699 14.6601 6.3599C14.6901 5.6199 15.2301 5.1499 15.8201 4.7999C16.9301 4.1499 18.2101 3.7699 19.4901 3.7199ZM8.9801 5.6399C9.3201 5.6199 9.6501 5.6299 9.9801 5.6799C10.2101 5.7099 10.4301 5.7599 10.6401 5.8599C12.1801 6.5499 11.0301 8.4599 10.7701 9.5899C10.5701 10.4399 10.6501 11.4099 10.2701 12.2099C9.8801 13.0599 9.0201 13.3499 8.2201 13.7199C7.6801 13.9699 7.1301 14.2399 6.5201 14.2699C4.7001 14.3399 4.0901 11.7199 4.2101 10.3199C4.4101 7.8199 6.4701 5.7899 8.9801 5.6399ZM21.3001 6.5999C21.4701 6.5299 21.6701 6.5799 21.7401 6.7699C21.8101 6.9599 21.7901 7.2099 21.8401 7.4199C21.9901 7.9699 22.3101 8.4699 22.7501 8.8299C23.1301 9.1399 23.6001 9.3499 24.0801 9.4199C24.2801 9.4499 24.5801 9.4199 24.6301 9.6799C24.6501 9.8399 24.5901 9.9999 24.4301 10.0599C24.3001 10.0999 24.1401 10.0899 24.0101 10.1099C23.4901 10.1999 23.0001 10.4499 22.6201 10.7999C22.2301 11.1799 21.9401 11.6699 21.8201 12.1999C21.7701 12.4199 21.8301 12.8599 21.5501 12.9399C21.3901 12.9799 21.2101 12.9299 21.1401 12.7499C21.0901 12.6099 21.1101 12.4399 21.0801 12.2999C20.9701 11.6899 20.6401 11.1299 20.1701 10.7299C19.8001 10.4099 19.3301 10.1799 18.8401 10.1099C18.6401 10.0799 18.3001 10.1099 18.2501 9.8399C18.2301 9.6799 18.2901 9.5199 18.4501 9.4599C18.5701 9.4199 18.7101 9.4299 18.8401 9.4099C19.3501 9.3399 19.8501 9.0799 20.2301 8.7399C20.6401 8.3699 20.9301 7.8799 21.0501 7.3599C21.1001 7.1399 21.0501 6.6899 21.3001 6.5999ZM13.0601 8.3599C13.6101 8.2499 13.9701 8.7999 14.1401 9.2399C14.4501 10.0899 14.6601 12.1999 13.4401 12.4499C13.2601 12.4799 13.0901 12.4799 12.9201 12.4599C11.5201 12.2699 11.8801 10.4599 12.1701 9.5199C12.3101 9.0899 12.5601 8.4599 13.0601 8.3599ZM14.7401 15.3999C15.9701 15.1699 17.1601 16.5199 17.7101 17.4699C17.9801 17.9399 18.2901 18.8899 17.5201 19.0499C17.1401 19.1299 16.7401 19.0099 16.4001 18.8599C15.5801 18.5099 14.6301 17.8899 14.1001 17.1599C13.5901 16.4599 13.8401 15.5699 14.7401 15.3999ZM7.3401 17.1199C8.0201 17.0599 8.7101 17.1599 9.4001 17.1499C10.3001 17.1299 11.2001 16.9599 12.0601 17.3599C12.6801 17.6499 13.1201 18.1599 13.6101 18.5999C14.1301 19.0699 14.7101 19.4799 15.3201 19.8199C16.2701 20.3499 17.8901 20.6299 18.4701 21.5899C18.9801 22.4399 18.5401 23.5199 18.1501 24.3299C17.0901 26.5199 14.9101 28.0399 12.4801 28.2599C9.0701 28.5599 5.8501 26.2799 5.0301 22.9499C4.7201 21.6599 4.7801 20.2899 5.2001 19.0299C5.3801 18.5099 5.6001 17.9699 6.0201 17.5999C6.3901 17.2899 6.8601 17.1599 7.3401 17.1199ZM24.0901 21.1599C25.6801 21.0699 25.5601 23.3999 24.0801 23.4799C23.3001 23.5299 22.5901 22.8099 22.8501 22.0299C23.0201 21.4999 23.5701 21.1899 24.0901 21.1599Z"/></symbol>
+  <symbol id="lava-03" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M22.5798 3.96006C25.9198 3.62006 28.4898 6.95006 27.2798 10.1001C26.8198 11.3301 25.8298 12.2901 24.5998 12.7501C23.8598 13.0301 22.6598 13.1901 22.0898 13.7501C21.7198 14.1201 21.6898 14.6801 21.6398 15.1701C21.5598 15.8601 21.4998 16.5801 21.1998 17.2201C20.3898 18.9501 18.9398 18.8301 17.8998 19.8801C17.4098 20.3701 17.3098 21.1101 17.0798 21.7401C16.6498 22.9001 15.7998 23.8601 14.4798 23.9001C12.6698 23.9601 11.3298 22.1301 11.9198 20.4201C12.4298 18.9601 13.8498 18.7201 14.4798 17.6401C14.7798 17.1201 14.7998 16.4901 14.8898 15.9201C15.0198 15.1001 15.2398 14.3001 15.8098 13.6701C16.2498 13.1601 16.8498 12.8201 17.4298 12.4901C17.8298 12.2701 18.2898 12.0401 18.5198 11.6201C18.9798 10.8101 18.4698 9.29006 18.4998 8.36006C18.5598 6.10006 20.3298 4.19006 22.5798 3.96006ZM22.9898 6.93006C23.1698 6.85006 23.4198 7.71006 23.6098 7.85006C23.8398 8.02006 24.5398 7.93006 24.6598 8.08006C24.7698 8.21006 24.0498 8.71006 23.9798 8.92006C23.8998 9.14006 24.1398 9.97006 24.0498 10.0301C23.9698 10.1001 23.8298 9.98006 23.7598 9.94006C23.5298 9.81006 23.2698 9.60006 22.9998 9.62006C22.7998 9.63006 22.1098 10.1001 22.0298 10.0301C21.9398 9.97006 22.1598 9.19006 22.1298 9.01006C22.0898 8.74006 21.7898 8.55006 21.5998 8.38006C21.5498 8.32006 21.3798 8.22006 21.3998 8.13006C21.4198 7.99006 22.2498 7.98006 22.4198 7.88006C22.7298 7.71006 22.7798 7.03006 22.9898 6.93006ZM9.6198 22.5201C12.2098 22.1401 12.7698 26.0601 10.2198 26.4401C7.62981 26.8201 7.0698 22.9001 9.6198 22.5201ZM5.4998 25.4001C7.2498 25.0801 7.7298 27.7201 6.0198 28.0401C4.2698 28.3601 3.7898 25.7201 5.4998 25.4001Z"/></symbol>
+  <symbol id="lava-05" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.2201 3.64003C16.9301 3.53003 18.6501 3.78003 20.2501 4.37003C26.8101 6.77003 30.1201 14.23 27.4501 20.71C26.8901 22.07 26.0901 23.32 25.1001 24.4C24.0601 25.53 22.8101 26.46 21.4301 27.13C19.9801 27.84 18.3901 28.26 16.7801 28.36C15.0701 28.47 13.3501 28.22 11.7501 27.63C5.1901 25.23 1.8801 17.77 4.5501 11.29C5.1101 9.93003 5.9101 8.68003 6.9001 7.60003C7.9401 6.47003 9.1901 5.54003 10.5701 4.87003C12.0201 4.16003 13.6101 3.74003 15.2201 3.64003ZM15.4201 5.84003C17.2301 5.74003 19.0601 6.13003 20.6601 6.96003C21.2101 7.24003 22.1501 7.82003 21.8301 8.57003C21.5301 9.31003 20.3701 9.55003 19.7001 9.80003C18.6901 10.17 16.3701 11.13 15.4801 11.34C15.1401 11.41 13.8201 11.47 13.4001 11.49C12.7701 11.51 12.0901 11.25 11.4801 11.11C10.7001 10.93 9.2101 10.78 8.7201 10.1C8.1401 9.31003 9.1401 8.45003 9.7101 8.00003C11.3401 6.72003 13.3501 5.96003 15.4201 5.84003ZM22.9401 10.8C25.5801 10.39 26.1101 13.73 26.1701 15.68C26.1801 16.08 26.1701 16.48 26.1401 16.88C25.8501 20.31 23.7601 23.42 20.7201 25.02C19.8901 25.45 18.9201 25.87 17.9901 25.96C16.9301 26.07 16.2101 25.4 16.0401 24.38C15.9101 23.59 15.9301 22.76 15.8801 21.96C15.8001 20.46 15.7201 18.95 15.6401 17.45C15.6001 16.64 15.3601 14.76 15.5701 14.07C15.8301 13.2 16.6201 13.04 17.3801 12.76C18.5401 12.34 19.7001 11.91 20.8601 11.48C21.5401 11.24 22.2201 10.91 22.9401 10.8ZM7.9001 12.44C8.9101 12.39 10.7501 12.98 11.8001 13.22C12.3901 13.35 12.9301 13.43 13.2701 13.99C13.6101 14.57 13.5401 15.31 13.5801 15.96C13.6501 17.25 13.7101 18.55 13.7801 19.84C13.8501 21.1 14.0601 22.92 13.9901 24.12C13.9501 24.79 13.6601 25.44 12.9201 25.52C12.0401 25.61 10.8401 24.81 10.1401 24.32C7.7001 22.6 6.1001 19.82 5.8601 16.84C5.7301 15.22 5.7101 12.54 7.9001 12.44ZM21.6101 17.08C21.8501 17.02 22.1201 17.12 22.2401 17.34C22.3401 17.53 22.3101 17.77 22.3601 17.98C22.4601 18.37 22.6701 18.74 22.9601 19.02C23.2401 19.28 23.5901 19.48 23.9701 19.57C24.3001 19.64 24.7201 19.59 24.8401 20C24.9101 20.24 24.8101 20.52 24.5801 20.64C24.0901 20.89 23.7001 20.62 22.9801 21.28C22.6801 21.57 22.4601 21.94 22.3601 22.34C22.2701 22.69 22.3301 23.16 21.8801 23.25C21.6501 23.3 21.3901 23.19 21.2801 22.98C21.1801 22.79 21.2101 22.55 21.1601 22.34C21.0601 21.95 20.8501 21.58 20.5601 21.3C20.2801 21.04 19.9301 20.84 19.5501 20.75C19.2201 20.68 18.8001 20.73 18.6801 20.32C18.6101 20.08 18.7101 19.8 18.9401 19.68C19.4301 19.43 19.8201 19.7 20.5401 19.04C20.8501 18.75 21.0701 18.36 21.1701 17.95C21.2401 17.62 21.1901 17.18 21.6101 17.08Z"/></symbol>
+  <symbol id="lava-06" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.3402 1.92014C16.2102 1.84014 17.1002 1.92014 17.9402 2.16014C18.6002 2.35014 19.2402 2.63014 19.8102 3.01014C21.5002 4.08014 22.6702 5.87014 22.9802 7.84014C23.1602 8.94014 23.0702 10.0901 23.0702 11.2001C23.0702 12.7901 23.0702 14.3701 23.0702 15.9601C23.0702 17.7101 23.0702 19.4501 23.0702 21.2001C23.0702 22.3501 23.1502 23.5301 22.8802 24.6701C22.3802 26.7801 20.8902 28.5901 18.9102 29.4901C18.2002 29.8101 17.4402 30.0101 16.6602 30.0801C15.7902 30.1601 14.9002 30.0801 14.0602 29.8401C13.4002 29.6501 12.7602 29.3701 12.1902 28.9901C10.5002 27.9201 9.33021 26.1301 9.02021 24.1601C8.84021 23.0601 8.93021 21.9101 8.93021 20.8001C8.93021 19.2101 8.93021 17.6301 8.93021 16.0401C8.93021 14.2901 8.93021 12.5501 8.93021 10.8001C8.93021 9.65014 8.85021 8.47014 9.12021 7.33014C9.62021 5.22014 11.1102 3.41014 13.0902 2.51014C13.8002 2.19014 14.5602 1.99014 15.3402 1.92014ZM15.7002 3.24014C18.3502 3.10014 20.8102 4.87014 21.5202 7.42014C21.8602 8.66014 21.7302 10.0101 21.7302 11.2801C21.7302 13.4301 21.7302 15.5701 21.7302 17.7201C21.7302 19.0401 21.7302 20.3601 21.7302 21.6801C21.7302 23.5401 21.6902 25.0901 20.4802 26.6101C20.2102 26.9501 19.5102 27.7001 19.0402 27.6601C18.7102 27.6301 18.8802 27.2101 18.9402 27.0001C19.1802 26.1401 19.3202 25.3001 18.9802 24.4401C18.6402 23.5501 17.8902 22.9001 17.1302 22.3701C16.7902 22.1401 16.0002 21.7501 15.8502 21.3701C15.6802 20.9101 16.3302 19.9101 16.4802 19.4201C16.9902 17.7501 16.1502 15.8101 14.1602 16.0101C12.9702 16.1301 12.0802 17.2201 12.1702 18.4001C12.2102 19.0601 12.5602 19.6701 12.9802 20.1601C13.3302 20.5501 14.4102 21.2301 14.3702 21.7601C14.3402 22.1801 13.9502 22.6101 13.7402 22.9601C13.3402 23.6001 12.9802 24.2901 12.8502 25.0401C12.7502 25.6201 12.8302 26.1901 12.9902 26.7501C13.0502 26.9601 13.2502 27.3901 13.1302 27.5901C12.9802 27.8201 12.4902 27.5001 12.3402 27.4001C11.9302 27.1201 11.5902 26.7301 11.3002 26.3201C9.98021 24.4201 10.2702 22.1101 10.2702 19.9201C10.2702 18.6901 10.2702 17.4701 10.2702 16.2401C10.2702 14.6001 10.2702 12.9601 10.2702 11.3201C10.2702 10.2001 10.1702 9.02014 10.3702 7.92014C10.7202 6.01014 12.0602 4.37014 13.8702 3.64014C14.4502 3.41014 15.0702 3.27014 15.7002 3.24014ZM17.4502 7.40014C18.0802 7.19014 18.0702 8.21014 18.4402 8.46014C18.7702 8.68014 19.7102 8.43014 19.7402 9.00014C19.7702 9.48014 19.0202 9.64014 18.9402 10.0801C18.8702 10.4701 19.3502 11.2901 18.8002 11.4601C18.3702 11.6001 17.9902 10.9901 17.5602 11.0201C17.1902 11.0501 16.5002 11.8201 16.1902 11.3101C15.9602 10.9201 16.3902 10.4001 16.2302 9.99014C16.0702 9.60014 15.3302 9.40014 15.4802 8.90014C15.6102 8.45014 16.5202 8.71014 16.8202 8.40014C17.0702 8.16014 17.1002 7.51014 17.4502 7.40014Z"/></symbol>
+  <symbol id="lava-12" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.1401 4.15977C16.6701 4.04977 18.2101 4.23977 19.6701 4.70977C20.4901 4.97977 21.2601 5.42977 22.0901 5.63977C23.2501 5.93977 24.5401 5.79977 25.4101 6.76977C26.3201 7.77977 26.0801 9.24977 26.5301 10.4498C26.7001 10.8998 26.9201 11.3198 27.0901 11.7698C27.6901 13.3398 27.9501 15.0398 27.8501 16.7198C27.5001 22.5798 22.7101 27.4198 16.8601 27.8398C15.0901 27.9698 13.3001 27.6998 11.6501 27.0498C10.9201 26.7598 10.2701 26.3398 9.55013 26.0298C8.70013 25.6498 7.68013 25.5698 7.02013 24.8398C6.34013 24.1098 6.27013 23.0198 5.83013 22.1498C4.71013 19.9498 4.06013 18.1698 4.13013 15.6398C4.32013 9.58977 9.10013 4.59977 15.1401 4.15977ZM15.5801 5.47977C16.9501 5.42977 18.3101 5.63977 19.6001 6.10977C20.1501 6.30977 20.7201 6.52977 21.1201 6.97977C21.7201 7.68977 21.7601 8.68977 22.3801 9.39977C23.3001 10.4198 24.9101 10.2898 25.5701 11.6098C26.0201 12.5198 26.2901 13.5598 26.4301 14.5598C27.2801 20.6998 22.6001 26.2698 16.4201 26.5198C14.9101 26.5798 13.4001 26.3098 12.0001 25.7398C11.4701 25.5198 10.8801 25.2798 10.4501 24.8898C9.89013 24.3698 9.71013 23.6098 9.22013 23.0398C8.70013 22.4398 7.93013 22.2598 7.34013 21.7598C6.78013 21.2898 6.48013 20.5498 6.21013 19.8798C5.76013 18.7398 5.51013 17.5098 5.48013 16.2798C5.33013 10.5398 9.84013 5.70977 15.5801 5.47977ZM15.7401 9.91977C16.2001 9.80977 16.6901 10.0198 16.8901 10.4498C17.0701 10.8098 17.0101 11.2798 17.1101 11.6698C17.3101 12.4798 17.7501 13.2198 18.3501 13.7898C18.9301 14.3398 19.6501 14.7398 20.4301 14.9098C21.0601 15.0598 21.8801 14.9398 22.0801 15.7398C22.1901 16.1998 21.9801 16.6898 21.5501 16.8898C21.2001 17.0598 20.7401 17.0098 20.3601 17.0998C19.6201 17.2798 18.9301 17.6598 18.3701 18.1898C17.7401 18.7798 17.2901 19.5598 17.0901 20.3998C16.9401 21.0298 17.0601 21.9098 16.2301 22.0798C15.7801 22.1798 15.3101 21.9698 15.1101 21.5498C14.9301 21.1898 14.9901 20.7198 14.8901 20.3298C14.6901 19.5298 14.2601 18.7998 13.6701 18.2298C13.0901 17.6698 12.3601 17.2698 11.5701 17.0898C10.9501 16.9398 10.1501 17.0598 9.93013 16.2898C9.80013 15.8198 10.0101 15.3198 10.4501 15.1098C10.7901 14.9398 11.2301 14.9998 11.6001 14.9098C12.3501 14.7298 13.0401 14.3598 13.6001 13.8398C14.2301 13.2498 14.6901 12.4798 14.9001 11.6398C15.0601 10.9998 14.9201 10.1298 15.7401 9.91977ZM16.0001 12.6398C16.7901 14.3098 17.6901 15.2098 19.3601 15.9998C17.6901 16.7898 16.7901 17.6898 16.0001 19.3598C15.2101 17.6898 14.3101 16.7898 12.6401 15.9998C14.3101 15.2098 15.2101 14.3098 16.0001 12.6398Z"/></symbol>
+  <symbol id="lava-13" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.1401 3.95997C19.0901 3.63997 23.8401 6.48997 25.8901 11C26.3801 12.08 26.7201 13.24 26.8701 14.42C26.9101 14.74 27.0801 15.37 26.8601 15.65C26.6501 15.9 26.1401 15.6 25.8701 15.59C25.1801 15.56 24.5401 16.05 24.4301 16.74C24.3201 17.5 24.8601 18.25 25.6401 18.33C25.8901 18.35 26.4001 18.17 26.5801 18.39C26.8001 18.65 26.5401 19.24 26.4501 19.52C26.3101 19.98 26.1701 20.66 25.7901 20.98C25.5201 21.2 25.1501 21.26 24.8701 21.46C24.6801 21.58 24.4901 21.88 24.2801 21.95C24.0801 22.02 23.9901 21.82 23.9101 21.67C23.6901 21.25 23.5201 20.85 23.1801 20.51C22.1001 19.44 20.2501 19.52 19.2701 20.7C18.1601 22.04 18.6501 24.14 20.2601 24.84C20.6601 25.01 21.0701 25.05 21.5101 25.06C21.6201 25.07 21.9001 25.04 21.9501 25.17C21.9901 25.28 21.7801 25.51 21.7201 25.59C21.4501 25.99 21.1601 26.37 20.6901 26.56C20.2001 26.76 19.8901 26.38 19.4801 26.17C19.1101 25.97 18.6701 25.93 18.2701 26.06C16.9601 26.48 17.6301 27.83 16.2701 27.99C14.6201 28.18 12.9201 28.01 11.3301 27.52C4.65006 25.44 1.10006 18.02 3.72006 11.51C4.25006 10.17 5.03006 8.92997 6.00006 7.86997C7.01006 6.75997 8.24006 5.83997 9.59006 5.16997C11.0101 4.47997 12.5601 4.05997 14.1401 3.95997ZM10.9701 8.87997C11.2201 8.76997 11.3101 9.03997 11.3901 9.21997C11.5701 9.60997 11.7201 10.2 12.0701 10.46C12.4201 10.71 13.0201 10.68 13.4401 10.73C13.6001 10.75 13.9101 10.73 13.9201 10.96C13.9401 11.15 13.6801 11.31 13.5601 11.43C13.2501 11.71 12.7301 12.04 12.6701 12.48C12.6001 12.9 12.8001 13.4 12.8801 13.81C12.9001 13.96 12.9901 14.22 12.7801 14.29C12.6101 14.34 12.4401 14.19 12.3001 14.11C11.9701 13.93 11.5701 13.6 11.1901 13.55C10.7401 13.49 10.2801 13.87 9.90006 14.08C9.74006 14.17 9.52006 14.36 9.34006 14.27C9.15006 14.19 9.25006 13.93 9.27006 13.78C9.36006 13.37 9.55006 12.86 9.47006 12.44C9.39006 12.01 8.87006 11.69 8.56006 11.41C8.45006 11.3 8.23006 11.16 8.22006 11C8.21006 10.76 8.46006 10.76 8.63006 10.74C9.05006 10.68 9.62006 10.72 10.0001 10.51C10.3801 10.29 10.5301 9.70997 10.7001 9.32997C10.7601 9.20997 10.8301 8.92997 10.9701 8.87997ZM24.3001 12.16C25.1501 11.9 25.5401 13.23 24.7001 13.44C23.8801 13.65 23.4901 12.41 24.3001 12.16ZM19.1801 16.96C20.0301 16.7 20.4201 18.03 19.5801 18.24C18.7601 18.45 18.3701 17.21 19.1801 16.96ZM27.7301 18.44C29.2001 18.06 29.7201 20.29 28.3001 20.61C26.8601 20.93 26.3601 18.8 27.7301 18.44ZM16.3801 19.88C17.5601 19.72 17.8301 21.55 16.6501 21.72C15.4601 21.88 15.2001 20.05 16.3801 19.88ZM23.7201 23.97C23.7001 23.71 23.8001 23.42 23.9301 23.16C23.9701 23.11 24.0401 22.93 24.1301 22.97C24.5201 23.13 23.9201 23.87 23.7201 23.97ZM13.7401 24C14.5901 23.74 14.9801 25.07 14.1401 25.28C13.3201 25.49 12.9301 24.25 13.7401 24Z"/></symbol>
+  <symbol id="lava-15" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.8199 2.99979C16.6399 2.80979 16.8499 3.96979 17.1599 4.53979C18.1599 6.30979 19.3699 7.95979 20.4899 9.64979C20.9899 10.3998 21.4699 11.1498 21.9399 11.9198C24.3599 15.8998 27.2999 21.8998 23.6199 26.0398C23.1099 26.6198 22.5099 27.1098 21.8499 27.5098C20.9399 28.0598 19.9399 28.4398 18.9099 28.6898C17.4299 29.0398 15.8799 29.1098 14.3799 28.9198C13.2099 28.7698 12.0499 28.4598 10.9799 27.9598C10.2099 27.5898 9.47989 27.1098 8.84989 26.5298C8.41989 26.1198 8.02988 25.6598 7.70988 25.1498C5.06988 20.9398 7.85989 15.5198 10.1399 11.7998C10.6199 11.0098 11.1099 10.2498 11.6199 9.47979C12.6699 7.89979 13.7899 6.35979 14.7299 4.70979C14.9799 4.27979 15.3699 3.10979 15.8199 2.99979ZM18.0299 10.8798C18.8799 10.6198 19.2699 11.9498 18.4299 12.1598C17.5999 12.3698 17.2199 11.1298 18.0299 10.8798ZM12.6599 13.0398C13.5899 12.8798 13.8699 14.3198 12.9399 14.4798C12.0099 14.6398 11.7299 13.1998 12.6599 13.0398ZM15.9499 15.2898C16.0399 15.2098 16.0799 15.3398 16.0999 15.3998C16.1899 15.6898 16.1599 16.0298 16.2499 16.3298C16.4399 17.0398 16.8099 17.6998 17.2999 18.2398C17.8499 18.8498 18.5699 19.2998 19.3499 19.5498C19.6599 19.6398 19.9699 19.6998 20.2799 19.7298C20.3599 19.7398 20.5699 19.7098 20.5699 19.8398C20.5699 19.9398 19.7099 20.0298 19.5399 20.0798C18.8799 20.2498 18.2699 20.5798 17.7499 21.0098C17.0899 21.5598 16.5999 22.2898 16.3199 23.0998C16.2199 23.3998 16.1499 23.6998 16.1199 24.0098C16.1099 24.1098 16.1399 24.3298 16.0499 24.3898C15.9599 24.4698 15.9199 24.3398 15.8999 24.2798C15.8099 23.9898 15.8399 23.6498 15.7499 23.3498C15.5599 22.6398 15.1899 21.9798 14.6999 21.4398C14.1499 20.8298 13.4299 20.3798 12.6499 20.1298C12.3399 20.0398 12.0299 19.9798 11.7199 19.9498C11.6399 19.9398 11.4299 19.9698 11.4299 19.8398C11.4299 19.7398 12.2899 19.6498 12.4599 19.5998C13.1199 19.4298 13.7299 19.0998 14.2499 18.6698C14.9099 18.1198 15.3999 17.3898 15.6799 16.5798C15.7799 16.2798 15.8499 15.9798 15.8799 15.6698C15.8899 15.5698 15.8599 15.3498 15.9499 15.2898Z"/></symbol>
+  <symbol id="lava-16" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.37 2.31986C21.53 1.88986 24.71 6.03986 23.2 9.94986C22.95 10.6199 22.56 11.2399 22.07 11.7599C21.31 12.5799 20.31 13.1599 19.22 13.4099C18.6 13.5499 17.57 13.5699 17.39 14.3399C17.24 14.9999 17.53 15.7299 17.5 16.3999C17.47 17.1399 16.89 18.3499 17.25 18.9999C17.54 19.5299 18.24 19.7599 18.69 20.1199C19.68 20.8999 20.11 22.2199 19.8 23.4399C19.59 24.2799 19.02 25.0199 18.26 25.4499C17.76 25.7399 17.03 25.8799 16.69 26.3999C16.39 26.8699 16.45 27.4999 16.31 28.0199C16.07 28.9299 15.26 29.6299 14.31 29.6999C12.54 29.8499 11.28 27.9499 12.11 26.3699C12.46 25.6999 13.4 25.3199 13.59 24.5699C13.72 24.0299 13.5 23.4599 13.45 22.9199C13.41 22.3999 13.52 21.8399 13.35 21.3399C13.08 20.5199 11.84 20.4599 11.18 20.1199C10.04 19.5399 9.19996 18.4599 8.90996 17.2199C8.49996 15.4399 9.27996 13.5399 10.82 12.5699C11.37 12.2199 12.58 11.9699 12.86 11.3699C13.06 10.9599 12.87 10.4499 12.73 10.0399C12.51 9.39986 12.34 8.76986 12.32 8.07986C12.24 5.17986 14.47 2.61986 17.37 2.31986ZM17.69 3.63986C18.28 3.59986 18.88 3.68986 19.43 3.89986C22.97 5.19986 23.19 10.1999 19.77 11.7999C19.29 12.0299 18.75 12.1699 18.21 12.1999C17.55 12.2399 16.91 12.0299 16.32 11.7399C15.46 11.3099 14.57 10.7199 14.12 9.84986C12.74 7.13986 14.68 3.81986 17.69 3.63986ZM17.81 5.23986C17.96 5.17986 18.16 5.20986 18.24 5.37986C18.46 5.87986 18.22 6.38986 19.07 7.09986C19.38 7.34986 19.76 7.51986 20.15 7.57986C20.34 7.60986 20.61 7.58986 20.66 7.83986C20.69 7.99986 20.62 8.15986 20.47 8.21986C19.87 8.42986 19.63 8.20986 18.97 8.83986C18.64 9.13986 18.41 9.54986 18.31 9.98986C18.27 10.1799 18.32 10.5399 18.07 10.6199C17.92 10.6599 17.74 10.6199 17.67 10.4599C17.44 9.94986 17.69 9.48986 16.87 8.77986C16.57 8.51986 16.19 8.32986 15.79 8.25986C15.6 8.22986 15.29 8.25986 15.25 7.99986C15.22 7.83986 15.28 7.67986 15.44 7.61986C16.04 7.40986 16.25 7.62986 16.92 7.01986C17.24 6.72986 17.47 6.33986 17.57 5.91986C17.62 5.71986 17.57 5.32986 17.81 5.23986ZM12.65 13.2799C14.36 13.0599 16.46 14.6599 16.12 16.7499C15.9 18.0699 14.57 19.0599 13.27 19.2099C12.88 19.2599 12.51 19.1999 12.14 19.0699C9.29996 18.0599 9.60996 13.6699 12.65 13.2799ZM16.5 20.8399C18.81 20.3899 19.34 24.0599 17.09 24.4799C15.87 24.6999 14.56 23.5699 14.81 22.3199C14.97 21.5499 15.76 20.9899 16.5 20.8399ZM9.13996 22.0799C10.27 21.8699 10.62 23.6299 9.48996 23.8399C8.34996 24.0499 8.00996 22.2899 9.13996 22.0799ZM13.77 26.5999C14.93 26.2799 15.58 27.9699 14.38 28.3299C13.22 28.6699 12.7 26.8999 13.77 26.5999ZM19.7 27.8399C20.83 27.6299 21.18 29.3899 20.05 29.5999C18.91 29.8099 18.57 28.0499 19.7 27.8399Z"/></symbol>
+  <symbol id="lava-18" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.4199 4.98011C18.8099 4.51011 21.3099 8.16011 19.6199 11.1501C18.8199 12.5801 17.0099 13.0301 16.6199 14.3401C16.3599 15.2201 16.5099 16.4301 16.5099 17.3401C16.5099 17.8001 16.4399 18.3201 16.6599 18.7501C16.9099 19.2701 17.4799 19.3301 17.9999 19.3601C18.6399 19.3801 19.2799 19.4201 19.9199 19.4801C22.3399 19.6901 25.2999 20.0401 27.4299 21.2901C27.7399 21.4701 28.0299 21.6801 28.2699 21.9301C28.4399 22.1101 28.5799 22.3001 28.6799 22.5201C29.5399 24.4201 26.7699 25.5001 25.4299 25.9101C22.9699 26.6601 20.3599 26.9201 17.7999 27.0201C14.5399 27.1501 11.1899 26.9901 7.99986 26.2801C7.63986 26.2001 7.26986 26.1101 6.91986 26.0101C6.62986 25.9301 6.33986 25.8401 6.05986 25.7401C4.76986 25.2901 2.42986 24.1701 3.36986 22.4101C3.81986 21.5801 4.78986 21.1201 5.62986 20.7901C7.59986 20.0001 9.77986 19.6901 11.8799 19.5001C12.5899 19.4301 13.2899 19.3901 13.9999 19.3601C14.4699 19.3301 14.9799 19.2901 15.2699 18.8701C15.6299 18.3501 15.4899 17.5401 15.4899 16.9401C15.4899 15.9701 15.6899 14.7401 15.1699 13.8701C14.7699 13.2001 14.0299 12.8401 13.4299 12.3701C12.8399 11.9101 12.3899 11.3001 12.1199 10.6001C11.1599 8.14011 12.8199 5.35011 15.4199 4.98011ZM15.8599 7.63011C16.3599 7.41011 16.3399 8.23011 16.6199 8.42011C16.8599 8.58011 17.5699 8.39011 17.5999 8.79011C17.6299 9.17011 17.0799 9.27011 16.9899 9.59011C16.9399 9.77011 17.0999 10.4001 16.9099 10.4701C16.7399 10.5401 16.2699 10.1701 16.0399 10.1601C15.7599 10.1501 15.2599 10.5401 15.0899 10.4701C14.8999 10.4001 15.0599 9.77011 15.0099 9.59011C14.9199 9.28011 14.3999 9.18011 14.3999 8.83011C14.3899 8.40011 15.1099 8.57011 15.3499 8.44011C15.6399 8.28011 15.5699 7.75011 15.8599 7.63011ZM21.8999 15.2701C23.0399 15.0601 23.3899 16.8101 22.2599 17.0201C21.1199 17.2301 20.7699 15.4801 21.8999 15.2701ZM9.41986 16.5501C10.5599 16.3401 10.9099 18.0901 9.77986 18.3001C8.63986 18.5101 8.28986 16.7601 9.41986 16.5501ZM24.1399 17.8301C25.2799 17.6201 25.6299 19.3701 24.4999 19.5801C23.3599 19.7901 23.0099 18.0401 24.1399 17.8301ZM9.77986 21.1801C9.92986 21.1801 10.7499 21.1301 10.7799 21.3101C10.7999 21.4101 10.1799 21.7301 10.0699 21.7901C9.52986 22.1101 8.88986 22.5601 8.92986 23.2601C8.97986 24.0301 9.84986 24.4501 10.4299 24.7801C10.5799 24.8601 10.9599 25.0501 10.6399 25.1601C10.2599 25.2901 9.70986 25.1901 9.32986 25.1501C8.11986 25.0201 6.85986 24.6801 5.74986 24.1701C5.43986 24.0301 4.47986 23.5601 4.51986 23.1601C4.54986 22.7901 5.34986 22.3901 5.63986 22.2501C6.89986 21.6401 8.38986 21.2601 9.77986 21.1801ZM21.5399 21.1801C22.9799 21.0501 24.9099 21.5901 26.2199 22.1801C26.5399 22.3201 27.4799 22.7801 27.4799 23.1801C27.4799 23.5801 26.5599 24.0301 26.2499 24.1701C24.9199 24.7801 23.0299 25.3001 21.5699 25.1901C21.4599 25.1801 21.2099 25.1801 21.2199 25.0301C21.2299 24.9401 21.8299 24.6401 21.9299 24.5801C22.4399 24.2701 23.0699 23.8501 23.0699 23.1801C23.0699 22.5201 22.4399 22.0901 21.9299 21.7901C21.8299 21.7301 21.2299 21.4301 21.2199 21.3401C21.2099 21.1901 21.4399 21.1901 21.5399 21.1801ZM21.5199 23.1801C20.6899 23.6401 19.6099 23.7401 18.6799 23.8401C16.8099 24.0501 14.8999 24.0401 13.0399 23.8101C12.1999 23.7101 11.2299 23.6001 10.4799 23.1801C11.3999 22.6801 13.5599 22.3701 14.5999 22.4401C15.0799 22.4701 15.5199 22.7201 15.9999 22.7201C16.4799 22.7201 16.9199 22.4701 17.3999 22.4401C18.4399 22.3701 20.5999 22.6801 21.5199 23.1801Z"/></symbol>
+  <symbol id="lava-19" viewBox="0 0 32 32"><path fill-rule="evenodd" clip-rule="evenodd" d="M27.0902 3.20994C28.5602 2.82994 29.0802 5.05994 27.6602 5.36994C26.2202 5.69994 25.7202 3.56994 27.0902 3.20994ZM21.1702 4.72994C21.4502 4.65994 21.7402 4.80994 21.8302 5.08994C21.9302 5.40994 21.9002 5.78994 21.9802 6.11994C22.1902 6.96994 22.6302 7.75994 23.2402 8.37994C23.9302 9.07994 24.8302 9.55994 25.7902 9.74994C26.0302 9.79994 26.2802 9.77994 26.5102 9.82994C26.7902 9.88994 26.9902 10.1199 26.9702 10.4099C26.9302 11.0399 25.8202 10.9499 25.3402 11.0999C24.2002 11.4399 23.0502 12.2299 22.5502 13.3499C22.0002 14.5599 22.4202 15.1599 22.2102 16.0499C22.0402 16.7699 21.5502 17.3599 21.3902 18.0999C21.1002 19.4299 21.2802 20.8099 20.9502 22.1399C20.1402 25.3299 17.5502 27.8699 14.3302 28.6099C8.54022 29.9299 3.07022 25.2299 3.51022 19.3099C3.59022 18.2099 3.89022 17.1199 4.37022 16.1199C5.49022 13.7999 7.62022 12.0399 10.1102 11.3899C11.2602 11.0899 12.4702 11.1699 13.6002 10.8399C14.4902 10.5699 14.9502 9.81994 15.7102 9.58994C16.0602 9.47994 16.4302 9.55994 16.7902 9.53994C17.3802 9.49994 17.9602 9.35994 18.4802 9.07994C19.4802 8.52994 20.2302 7.47994 20.5602 6.39994C20.7002 5.94994 20.6702 4.84994 21.1702 4.72994ZM26.4502 16.6499C27.9202 16.2699 28.4402 18.4999 27.0202 18.8099C25.5802 19.1399 25.0802 17.0099 26.4502 16.6499ZM9.29022 21.6499C10.8902 21.4199 11.2102 23.8299 9.66022 24.0499C8.06022 24.2699 7.73022 21.8599 9.29022 21.6499ZM13.7402 24.7699C14.5902 24.5099 14.9802 25.8399 14.1402 26.0499C13.3202 26.2599 12.9302 25.0199 13.7402 24.7699Z"/></symbol>
+</svg>
+
+<main class="page">
+  <div class="stage">
+    <section class="phone" id="phone">
+      <div class="bg">
+        <div class="horizon-glow"></div>
+        <div class="frost-band"></div>
+        <div class="heat-band"></div>
+        <div class="film-grain"></div>
+      </div>
+
+      <div class="u status">
+        <span>9:41</span>
+        <span class="island"></span>
+        <span class="icons">
+          <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+          <svg viewBox="0 0 26 12"><rect x="0.5" y="0.5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity="0.4"/><rect x="2" y="2" width="19" height="8" rx="2"/><rect x="24" y="4" width="1.5" height="4" rx="0.75" opacity="0.4"/></svg>
+        </span>
+      </div>
+
+      <button class="u circle-btn more" type="button" aria-label="More">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 8h12M4 12.5h12"/></svg>
+      </button>
+      <div class="u title">
+        <h1>Memories</h1>
+        <p id="summary"></p>
+      </div>
+      <button class="u circle-btn lapse" id="lapse" type="button" aria-label="Play time-lapse" aria-pressed="false">
+        <svg id="lapseIcon" viewBox="0 0 20 20" fill="currentColor"><path d="M6.5 4.6v10.8c0 .6.7 1 1.2.6l8-5.4a.7.7 0 0 0 0-1.2l-8-5.4c-.5-.4-1.2 0-1.2.6Z"/></svg>
+      </button>
+
+      <nav class="u views" role="tablist" aria-label="Layout">
+        <span class="knob" id="knob"></span>
+        <button role="tab" data-view="lamp"  aria-selected="true"><svg fill="currentColor"><use href="#lava-06"/></svg>Lava Lamp</button>
+        <button role="tab" data-view="foam"  aria-selected="false"><svg fill="currentColor"><use href="#lava-02"/></svg>Foam</button>
+        <button role="tab" data-view="orbit" aria-selected="false"><svg fill="currentColor"><use href="#lava-12"/></svg>Orbit</button>
+        <button role="tab" data-view="chain" aria-selected="false"><svg fill="currentColor"><use href="#lava-03"/></svg>Chain</button>
+      </nav>
+
+      <div class="u content">
+        <div class="view lamp on" id="v-lamp">
+          <div class="lamp-scale"></div>
+          <span class="lamp-label" style="top: calc(6 * var(--u))">frozen</span>
+          <span class="lamp-label" style="bottom: calc(8 * var(--u))">still heating</span>
+        </div>
+        <div class="view foam" id="v-foam"><div class="scroll" id="foamScroll"></div></div>
+        <div class="view orbit" id="v-orbit"></div>
+        <div class="view chain" id="v-chain"><div class="scroll" id="chainScroll"></div></div>
+      </div>
+
+      <div class="u scrub">
+        <div class="row"><span>Now</span><output id="when">Today</output><span>+1 year</span></div>
+        <input id="time" type="range" min="0" max="1000" value="0" aria-label="Move time forward">
+      </div>
+
+      <form class="u composer" id="composer" autocomplete="off">
+        <label class="field">
+          <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M11 4v14M4 11h14"/></svg>
+          <input id="say" placeholder="Any bothers?" aria-label="Save a memory">
+        </label>
+        <button class="mic" id="mic" type="button" aria-label="Save a voice note">
+          <svg viewBox="0 0 22 22" fill="none" stroke="#fff8ee" stroke-width="1.6" stroke-linecap="round"><rect x="8" y="2.5" width="6" height="11" rx="3" fill="#fff8ee" stroke="none"/><path d="M5 10.5a6 6 0 0 0 12 0M11 16.5v3"/></svg>
+        </button>
+      </form>
+      <div class="u home"></div>
+
+      <div class="scrim" id="scrim"></div>
+      <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+        <div class="grab"></div>
+        <div class="stage-line" id="sheetStage"></div>
+        <div class="deg-big thermal" id="sheetDeg"></div>
+        <h2 id="sheetTitle"></h2>
+        <p class="who" id="sheetWho"></p>
+        <p class="desc" id="sheetDesc"></p>
+        <div class="actions">
+          <button type="button" id="close">Close</button>
+          <button type="button" class="primary" id="revisit"><svg fill="currentColor"><use href="#lava-19"/></svg>Revisit</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="notes">
+    <h2>How hot is a memory?</h2>
+    <p>Temperature is the time since anyone touched it. You or an agent bringing it up re-heats it. Left alone, it cools and finally freezes. Memories you return to often cool more slowly.</p>
+
+    <h3>Five states, named for the Lava icons</h3>
+    <ul class="legend" id="legend"></ul>
+
+    <h3>How heat shows</h3>
+    <ul class="cues">
+      <li><b>Color</b> follows the Thermal word's glow stack: cream → orange → ember, then dusk → blue → ice.</li>
+      <li><b>Shape</b>: hot memories are liquid and wobble; frozen ones set into ice cubes with square corners.</li>
+      <li><b>Size</b>: heat expands a memory and cold contracts it.</li>
+      <li><b>Surface</b>: hot ones glow and throw off beads; cold ones frost over with a crystal hatch.</li>
+      <li><b>Place</b>: memories rise from the Heat band into the frost (Lava Lamp), drift out from the core (Orbit), or press into thin layers like an ice core (Chain).</li>
+      <li><b>The whole space</b>: the Heat band and Horizon glow dim, and the frost at the top spreads, as the average memory cools.</li>
+    </ul>
+
+    <h3>Try</h3>
+    <ul class="try">
+      <li>Drag time forward, or press ▶, to watch everything cool.</li>
+      <li>Tap a memory, then Revisit, to re-heat it.</li>
+      <li>Type in “Any bothers?” and press return. A new memory appears molten.</li>
+    </ul>
+  </aside>
+</main>
+
+<script>
+/* ---------- Data ---------- */
+// ago = days since last revisited; visits = how often you or an agent brought it up.
+const memories = [
+  { title: 'Lights down, something warm', agent: 'Charlie',     ago: 0.03, visits: 2 },
+  { title: 'Morning notes',               agent: 'You',         ago: 0.4,  visits: 1 },
+  { title: 'Spilled the tea about Jo',    agent: 'Ride-or-Die', ago: 1.2,  visits: 3 },
+  { title: 'Plan the weekend trip',       agent: 'Charlie',     ago: 2.5,  visits: 2 },
+  { title: 'Roast of my new haircut',     agent: 'Rooster',     ago: 4,    visits: 1 },
+  { title: 'Interview nerves',            agent: 'Ride-or-Die', ago: 7,    visits: 4 },
+  { title: 'Die Hard is a Christmas movie', agent: 'Die Hard',  ago: 12,   visits: 2 },
+  { title: 'Promise to call Dad',         agent: 'Charlie',     ago: 19,   visits: 1 },
+  { title: "Grandma's dumpling recipe",   agent: 'You',         ago: 30,   visits: 7 },
+  { title: 'Breakup playlist',            agent: 'Ride-or-Die', ago: 48,   visits: 3 },
+  { title: 'Ramen night in Tokyo',        agent: 'Rooster',     ago: 120,  visits: 2 },
+  { title: 'Lost on the hiking trail',    agent: 'Die Hard',    ago: 210,  visits: 1 },
+  { title: 'Keys to the first apartment', agent: 'You',         ago: 330,  visits: 2 },
+].map((m, i) => ({ id: 'm' + i, title: m.title, agent: m.agent, visits: m.visits, touchedAt: -m.ago }));
+
+// The words come from the Lava icon descriptions in Figma.
+const STAGES = [
+  { key: 'molten',  min: 0.8,  name: 'Molten',        note: 'still heating',     icon: 'lava-06', glyph: 'Lava Lamp',
+    desc: 'The lamp itself: a pool that lets go of a blob, a star rising.' },
+  { key: 'simmer',  min: 0.55, name: 'Simmering',     note: 'warm',              icon: 'lava-16', glyph: 'Rising Bubbles',
+    desc: 'Bubbles rising and joining; the biggest carries the spark.' },
+  { key: 'cooling', min: 0.3,  name: 'Cooling',       note: 'losing heat',       icon: 'lava-13', glyph: 'Eroded Orb',
+    desc: 'Acid eats at the edge; the star in the middle stays.' },
+  { key: 'frost',   min: 0.12, name: 'Frosting over', note: 'icing at the edges', icon: 'lava-05', glyph: 'Cell Orb',
+    desc: 'A sealed orb divided into chambers; one keeps a spark.' },
+  { key: 'frozen',  min: 0,    name: 'Frozen',        note: 'kept in ice',       icon: 'lava-15', glyph: 'Droplet Vault',
+    desc: 'A single drop sealed around a spark and a few bubbles.' },
+];
+
+let day = 0;            // how far time has been moved forward, in days
+let view = 'lamp';
+let openId = null;
+
+/* ---------- Temperature ---------- */
+function heat(m) {
+  const age = Math.max(0, day - m.touchedAt);
+  const halfLife = 10 * (1 + 0.6 * Math.log(1 + m.visits));   // days: about 6 weeks to freeze after one visit
+  return Math.pow(2, -age / halfLife);
+}
+const stageOf = t => STAGES.find(s => t >= s.min);
+const degrees = t => Math.round(-18 + t * 116);
+
+// Cold → hot. Ice, Thermal-word blue, dusk, wine, ember (Heat band), orange, cream.
+const RAMP = [[0, '#d9ecff'], [0.12, '#5f86ff'], [0.3, '#3b2c78'], [0.45, '#7a1631'], [0.62, '#d4220c'], [0.82, '#ff5a1f'], [1, '#ffe7c2']];
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const css = ([r, g, b], a = 1) => `rgb(${r | 0} ${g | 0} ${b | 0} / ${a})`;
+const mix = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
+function ramp(t) {
+  t = Math.min(1, Math.max(0, t));
+  for (let i = 1; i < RAMP.length; i++) {
+    if (t <= RAMP[i][0]) {
+      const [t0, c0] = RAMP[i - 1], [t1, c1] = RAMP[i];
+      return mix(hex(c0), hex(c1), (t - t0) / (t1 - t0));
+    }
+  }
+  return hex(RAMP[RAMP.length - 1][1]);
+}
+const DARK = hex('#0a0406');
+const NIGHT_ICE = hex('#0b1530');
+
+// Every cue that carries temperature, as CSS custom properties.
+function thermalVars(t) {
+  const core = ramp(t);
+  const ice = Math.max(0, Math.min(1, (0.32 - t) / 0.26));
+  const edgeBase = mix(DARK, NIGHT_ICE, ice);
+  return {
+    '--t': t.toFixed(3),
+    '--core': css(core),
+    '--core2': css(ramp(t + 0.12)),
+    '--hi': css(mix(core, [255, 252, 245], 0.55), 0.85),
+    '--edge': css(mix(core, edgeBase, 0.62)),
+    '--edge2': css(mix(ramp(t - 0.15), edgeBase, 0.35)),
+    '--glow': css(core, 0.15 + t * 0.55),
+    '--ice': ice.toFixed(3),
+    '--ink': t < 0.3 ? '#0d1b3d' : '#1b0700',
+    '--txt': t > 0.75 || t < 0.08 ? (t < 0.08 ? '#0d1b3d' : '#1b0700') : '#fff8ee',
+    '--deg': css(mix(core, [255, 248, 238], 0.35)),
+    '--br': (20 + t * 30).toFixed(1) + '%',
+    '--wob': (2 + (1 - t) * 4).toFixed(2) + 's',
+  };
+}
+function applyVars(el, vars) { for (const k in vars) el.style.setProperty(k, vars[k]); }
+
+/* ---------- Words ---------- */
+function span(days, short) {
+  if (days < 1 / 24) return short ? 'now' : 'just now';
+  if (days < 1) return Math.round(days * 24) + (short ? 'h' : ' hours');
+  if (days < 14) { const d = Math.round(days); return d + (short ? 'd' : d === 1 ? ' day' : ' days'); }
+  if (days < 60) { const w = Math.round(days / 7); return w + (short ? 'w' : w === 1 ? ' week' : ' weeks'); }
+  if (days < 365) { const mo = Math.round(days / 30); return mo + (short ? 'mo' : mo === 1 ? ' month' : ' months'); }
+  const y = Math.round(days / 365 * 10) / 10; return y + (short ? 'y' : y === 1 ? ' year' : ' years');
+}
+const ago = m => { const d = day - m.touchedAt; return d < 1 / 24 ? 'just now' : span(d) + ' ago'; };
+const shortAgo = m => { const d = day - m.touchedAt; return d < 1 / 24 ? 'now' : span(d, true); };
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function hash(s) { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 10000) / 10000; }
+
+/* ---------- Shared pieces ---------- */
+const phone = document.getElementById('phone');
+const U = n => `calc(${n.toFixed(2)} * var(--u))`;
+
+function orbHTML(stage, size, iconSize) {
+  return `<span class="orb" style="--s:${size};--i:${iconSize}"><span class="frost"></span><span class="beads"><i></i><i></i><i></i></span>` +
+         `<svg class="ink" fill="currentColor"><use href="#${stage.icon}"/></svg></span>`;
+}
+function updateOrb(orb, t, stage, size) {
+  orb.style.setProperty('--s', size.toFixed(1));
+  orb.classList.toggle('liquid', t >= 0.55);
+  orb.classList.toggle('molten', t >= 0.8);
+  const use = orb.querySelector('use');
+  if (use.getAttribute('href') !== '#' + stage.icon) use.setAttribute('href', '#' + stage.icon);
+}
+// Keep one element per memory per view, so positions animate between frames.
+function memEl(container, m, extra = '') {
+  let el = container.querySelector(`[data-id="${m.id}"]`);
+  if (!el) {
+    el = document.createElement('button');
+    el.className = 'mem' + (m.fresh ? ' fresh' : '');
+    el.dataset.id = m.id;
+    el.type = 'button';
+    el.innerHTML = orbHTML(STAGES[0], 40, 22) + extra;
+    container.appendChild(el);
+  }
+  return el;
+}
+
+/* ---------- Lava Lamp: born in the Heat band, rising into the frost as they cool ---------- */
+function renderLamp() {
+  const box = document.getElementById('v-lamp');
+  const W = 402, H = 530;
+  const all = memories.map(m => ({ m, t: heat(m) }));
+  // Frozen memories pack into an ice shelf at the top, newest-frozen nearest the melt.
+  const iced = all.filter(x => x.t < 0.12).sort((a, b) => a.m.touchedAt - b.m.touchedAt);
+  const PER_ROW = 7;
+  iced.forEach((it, i) => {
+    it.s = 36;
+    it.x = 46 + (i % PER_ROW) * 52 + (Math.floor(i / PER_ROW) % 2) * 14;
+    it.y = 40 + Math.floor(i / PER_ROW) * 46;
+  });
+  const shelf = iced.length ? 40 + Math.ceil(iced.length / PER_ROW) * 46 : 20;
+  // The rest float between the shelf (cold) and the Heat band (hot).
+  const items = all.filter(x => x.t >= 0.12).map(it => {
+    const s = 34 + it.t * 30;
+    const y = shelf + 16 + (it.t - 0.12) / 0.88 * (H - 96 - shelf);
+    const w = Math.max(s, Math.min(112, 38 + it.m.title.length * 5.4));
+    return { ...it, s, w, h: s + 28, x: 70 + hash(it.m.id) * (W - 140), y, ty: y };
+  });
+  // Push overlapping orbs (with their labels) apart, sideways first; they ease back toward their heat line.
+  for (let k = 0; k < 80; k++) {
+    for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+      const a = items[i], b = items[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const ox = (a.w + b.w) / 2 + 6 - Math.abs(dx), oy = (a.h + b.h) / 2 - Math.abs(dy);
+      if (ox <= 0 || oy <= 0) continue;
+      if (ox < oy * 1.6) {
+        const sx = dx === 0 ? (hash(a.m.id) < hash(b.m.id) ? 1 : -1) : Math.sign(dx);
+        a.x -= sx * ox / 2; b.x += sx * ox / 2;
+      } else {
+        const sy = Math.sign(dy) || 1;
+        a.y -= sy * oy / 2; b.y += sy * oy / 2;
+      }
+    }
+    for (const it of items) {
+      it.y += (it.ty - it.y) * 0.04;
+      it.x = Math.min(W - it.w / 2 - 8, Math.max(it.w / 2 + 8, it.x));
+      it.y = Math.min(H - 64, Math.max(shelf + it.s / 2, it.y));
+    }
+  }
+  // Settle hottest first: each takes the free spot nearest its own, sideways first, then up or down.
+  const placed = [];
+  const free = (it, x, y) => !placed.some(p => Math.abs(p.x - x) < (p.w + it.w) / 2 + 6 && Math.abs(p.y - y) < (p.h + it.h) / 2 + 2);
+  for (const it of items.sort((a, b) => b.t - a.t)) {
+    const x0 = it.x, y0 = Math.min(H - 64, it.ty);
+    const lo = it.w / 2 + 8, hi = W - it.w / 2 - 8, top = shelf + it.s / 2, bottom = H - 64;
+    search:
+    for (let k = 0; k < 120; k++) {
+      const y = y0 + (k % 2 ? -1 : 1) * Math.ceil(k / 2) * 6;   // 0, +6, -6, +12, -12 …
+      if (y < top || y > bottom) continue;
+      for (const dx of [0, 24, -24, 48, -48, 72, -72, 96, -96, 120, -120, 150, -150, 180, -180]) {
+        const x = x0 + dx;
+        if (x < lo || x > hi) continue;
+        if (free(it, x, y)) { it.x = x; it.y = y; break search; }
+      }
+    }
+    placed.push(it);
+  }
+  for (const it of iced.concat(items)) {
+    const st = stageOf(it.t);
+    const el = memEl(box, it.m, '<span class="tag"><b></b><i></i></span>');
+    el.classList.toggle('iced', it.t < 0.12);
+    applyVars(el, thermalVars(it.t));
+    el.style.left = U(it.x); el.style.top = U(it.y);
+    el.style.zIndex = Math.round(it.t * 100);
+    updateOrb(el.querySelector('.orb'), it.t, st, it.s);
+    el.querySelector('.orb').style.setProperty('--i', (16 + it.t * 10).toFixed(1));
+    el.querySelector('.tag b').textContent = it.m.title;
+    el.querySelector('.tag i').textContent = degrees(it.t) + '°';
+    el.setAttribute('aria-label', `${it.m.title}, ${st.name}, ${ago(it.m)}`);
+  }
+  prune(box);
+}
+
+/* ---------- Foam: gradient cards grouped by state ---------- */
+function renderFoam() {
+  const box = document.getElementById('foamScroll');
+  const list = memories.map(m => ({ m, t: heat(m) })).sort((a, b) => b.t - a.t);
+  let html = '';
+  for (const st of STAGES) {
+    const group = list.filter(x => stageOf(x.t) === st);
+    if (!group.length) continue;
+    html += `<div class="group-head">${st.name}<sup>${group.length}</sup><small>${st.note}</small></div><div class="grid">`;
+    for (const { m, t } of group) {
+      const h = Math.round(118 + t * 72);   // heat expands the card, cold presses it down
+      html += `<button class="card" data-id="${m.id}" style="--h:${h}">` +
+        `<span class="frost"></span><span class="name">${esc(m.title)}</span>` +
+        `<span class="meta">${esc(m.agent)} · ${shortAgo(m)}</span>` +
+        `<svg class="ink" fill="currentColor"><use href="#${st.icon}"/></svg>` +
+        `<span class="deg">${degrees(t)}°</span></button>`;
+    }
+    html += '</div>';
+  }
+  box.innerHTML = html;
+  box.querySelectorAll('.card').forEach(el => applyVars(el, thermalVars(heat(byId(el.dataset.id)))));
+}
+
+/* ---------- Orbit: the hottest memory is the core, the rest drift outward as they cool ---------- */
+function renderOrbit() {
+  const box = document.getElementById('v-orbit');
+  const CX = 201, CY = 274;
+  const R = t => 74 + (1 - t) * 108;
+  const list = memories.map(m => ({ m, t: heat(m) })).sort((a, b) => b.t - a.t);
+  const core = list[0];
+
+  if (!box.querySelector('svg')) {
+    box.innerHTML = `<svg class="orbit-svg" viewBox="0 0 402 530" preserveAspectRatio="none">
+      <defs><radialGradient id="coreHeat"><stop offset="0" stop-color="#ff5a1f" stop-opacity=".35"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></radialGradient>
+      <radialGradient id="frostRing" r=".5"><stop offset=".72" stop-color="#5f86ff" stop-opacity="0"/><stop offset=".9" stop-color="#9cc2ff" stop-opacity=".16"/><stop offset="1" stop-color="#d9ecff" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="${CX}" cy="${CY}" r="${R(0) + 20}" fill="url(#frostRing)"/>
+      <circle id="heatPool" cx="${CX}" cy="${CY}" r="120" fill="url(#coreHeat)"/>
+      ${[0.55, 0.3, 0.12].map(t => `<circle cx="${CX}" cy="${CY}" r="${R(t)}" fill="none" stroke="${css(ramp(t), 0.35)}" stroke-dasharray="2 5"/>`).join('')}
+      <g id="bonds"></g></svg>
+      ${[[0.55, 'simmer line'], [0.3, 'cooling'], [0.12, 'frost line']].map(([t, l]) => `<span class="ring-label" style="left:${U(CX)};top:${U(CY - R(t))}">${l}</span>`).join('')}
+      <div class="core-head" style="top:${U(2)}"><span>core memory</span><div class="core-word thermal" id="coreWord"></div></div>`;
+  }
+  // Warm bonds to the core fade out as a memory cools.
+  const others = list.slice(1);
+  const pos = new Map();
+  others.forEach(({ m, t }, i) => {
+    const a = (i * 137.5 + hash(m.id) * 40 - 90) * Math.PI / 180;
+    const r = R(t);
+    pos.set(m.id, [CX + Math.cos(a) * r, CY + Math.sin(a) * r * 1.02]);
+  });
+  box.querySelector('#bonds').innerHTML = others.map(({ m, t }) => {
+    const [x, y] = pos.get(m.id);
+    return `<line x1="${CX}" y1="${CY}" x2="${x}" y2="${y}" stroke="${css(ramp(t), Math.max(0, t - 0.15) * 0.8)}" stroke-width="${(0.5 + t * 2).toFixed(2)}"/>`;
+  }).join('');
+  const meanT = list.reduce((s, x) => s + x.t, 0) / list.length;
+  box.querySelector('#heatPool').setAttribute('r', (40 + meanT * 120).toFixed(1));
+
+  for (const { m, t } of list) {
+    const st = stageOf(t);
+    const el = memEl(box, m);
+    applyVars(el, thermalVars(t));
+    const isCore = m === core.m;
+    const [x, y] = isCore ? [CX, CY] : pos.get(m.id);
+    el.style.left = U(x); el.style.top = U(y);
+    el.style.zIndex = isCore ? 200 : Math.round(t * 100);
+    updateOrb(el.querySelector('.orb'), t, st, isCore ? 96 : 30 + t * 26);
+    el.querySelector('.orb').style.setProperty('--i', isCore ? 34 : (14 + t * 8).toFixed(1));
+    el.setAttribute('aria-label', `${m.title}, ${st.name}, ${ago(m)}`);
+  }
+  const word = box.querySelector('#coreWord');
+  const w = esc(core.m.title);
+  word.innerHTML = `<span class="g-blue">${w}</span><span class="g-orange">${w}</span><span class="g-cream">${w}</span>`;
+  thermalWord(word, core.t);
+  prune(box);
+}
+
+/* ---------- Chain: an ice core. Fresh layers are thick and molten at the bottom;
+   old ones are pressed thin and frozen at the top. ---------- */
+let chainFirst = true;
+function renderChain() {
+  const box = document.getElementById('chainScroll');
+  const list = memories.map(m => ({ m, t: heat(m) })).sort((a, b) => a.t - b.t);
+  let html = `<div class="chain-note"><span>oldest · pressed into ice</span><span>↑</span></div>`;
+  for (const { m, t } of list) {
+    const st = stageOf(t);
+    const h = 26 + t * 58, r = 6 + t * 22, fs = 11.5 + t * 4.5, i = 14 + t * 12;
+    html += `<button class="layer" data-id="${m.id}" style="--h:${h.toFixed(1)};--r:${r.toFixed(1)};--fs:${fs.toFixed(1)};--i:${i.toFixed(1)}">` +
+      `<span class="frost"></span><svg class="ink" fill="currentColor"><use href="#${st.icon}"/></svg>` +
+      `<span class="name">${esc(m.title)}</span><span class="meta">${degrees(t)}° · ${shortAgo(m)}</span></button>`;
+  }
+  html += `<div class="chain-note"><span>newest · still heating</span><span>↓</span></div>`;
+  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  box.innerHTML = html;
+  box.querySelectorAll('.layer').forEach(el => applyVars(el, thermalVars(heat(byId(el.dataset.id)))));
+  if (chainFirst || atBottom) { box.scrollTop = box.scrollHeight; chainFirst = false; }
+}
+
+/* ---------- Thermal word colors for a temperature ---------- */
+function thermalWord(el, t) {
+  const c = ramp(t);
+  el.style.setProperty('--far', css(t > 0.3 ? hex('#2f5bff') : ramp(0.12), 0.55 + (1 - t) * 0.45));
+  el.style.setProperty('--mid', css(t > 0.3 ? c : ramp(0.12)));
+  el.style.setProperty('--near', css(mix(c, [255, 248, 238], 0.75)));
+}
+
+function prune(box) {
+  const ids = new Set(memories.map(m => m.id));
+  box.querySelectorAll('.mem').forEach(el => { if (!ids.has(el.dataset.id)) el.remove(); });
+}
+const byId = id => memories.find(m => m.id === id);
+
+/* ---------- Render ---------- */
+const RENDER = { lamp: renderLamp, foam: renderFoam, orbit: renderOrbit, chain: renderChain };
+function render() {
+  RENDER[view]();
+  const ts = memories.map(heat);
+  const mean = ts.reduce((a, b) => a + b, 0) / ts.length;
+  phone.style.setProperty('--heat', mean.toFixed(3));
+  phone.style.setProperty('--frost', (1 - mean).toFixed(3));
+  const count = k => ts.filter(t => stageOf(t).key === k).length;
+  const hot = count('molten') + count('simmer');
+  const cold = count('frost') + count('frozen');
+  document.getElementById('summary').innerHTML =
+    `<b style="color:#ff8a4c">${hot} heating</b> · ${count('cooling')} cooling · <b style="color:#9cc2ff">${cold} frozen</b>`;
+  document.getElementById('when').textContent = day < 0.01 ? 'Today' : '+' + span(day) + ' from now';
+  if (openId) fillSheet();
+  memories.forEach(m => { m.fresh = false; });
+}
+
+/* ---------- Detail sheet ---------- */
+function openSheet(id) { openId = id; fillSheet(); phone.classList.add('sheet-open'); document.getElementById('revisit').focus({ preventScroll: true }); }
+function closeSheet() { openId = null; phone.classList.remove('sheet-open'); }
+function fillSheet() {
+  const m = byId(openId); if (!m) return;
+  const t = heat(m), st = stageOf(t);
+  const sheet = document.getElementById('sheet');
+  applyVars(sheet, thermalVars(t));
+  document.getElementById('sheetStage').innerHTML = `<svg fill="currentColor"><use href="#${st.icon}"/></svg>${st.name} · ${st.note}`;
+  const deg = degrees(t) + '°';
+  const big = document.getElementById('sheetDeg');
+  big.innerHTML = `<span class="g-blue">${deg}</span><span class="g-orange">${deg}</span><span class="g-cream">${deg}</span>`;
+  thermalWord(big, t);
+  document.getElementById('sheetTitle').textContent = m.title;
+  document.getElementById('sheetWho').textContent =
+    `${m.agent === 'You' ? 'Saved by you' : 'With ' + m.agent} · revisited ${ago(m)} · ${m.visits} ${m.visits === 1 ? 'visit' : 'visits'}`;
+  document.getElementById('sheetDesc').innerHTML = `<em>${st.glyph}</em>${st.desc}`;
+}
+document.getElementById('revisit').addEventListener('click', () => {
+  const m = byId(openId); if (!m) return;
+  m.touchedAt = day; m.visits += 1;
+  render();
+  document.querySelectorAll(`.mem[data-id="${m.id}"]`).forEach(el => {
+    el.classList.remove('reheat'); void el.offsetWidth; el.classList.add('reheat');
+  });
+});
+document.getElementById('close').addEventListener('click', closeSheet);
+document.getElementById('scrim').addEventListener('click', closeSheet);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.querySelector('.content').addEventListener('click', e => {
+  const el = e.target.closest('[data-id]');
+  if (el) openSheet(el.dataset.id);
+});
+
+/* ---------- Views ---------- */
+const tabs = [...document.querySelectorAll('.views button')];
+function setView(v) {
+  view = v;
+  tabs.forEach((b, i) => {
+    const on = b.dataset.view === v;
+    b.setAttribute('aria-selected', on);
+    if (on) document.getElementById('knob').style.translate = `calc(${i} * 100%) 0`;
+  });
+  document.querySelectorAll('.view').forEach(el => el.classList.toggle('on', el.id === 'v-' + v));
+  render();
+}
+tabs.forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+/* ---------- Time ---------- */
+const slider = document.getElementById('time');
+const toDay = v => 365 * Math.pow(v / 1000, 2.2);
+slider.addEventListener('input', () => { day = toDay(+slider.value); render(); });
+
+let playing = null;
+const lapse = document.getElementById('lapse');
+const PLAY = '<path d="M6.5 4.6v10.8c0 .6.7 1 1.2.6l8-5.4a.7.7 0 0 0 0-1.2l-8-5.4c-.5-.4-1.2 0-1.2.6Z"/>';
+const PAUSE = '<rect x="5.5" y="4.5" width="3" height="11" rx="1"/><rect x="11.5" y="4.5" width="3" height="11" rx="1"/>';
+function stopLapse() {
+  cancelAnimationFrame(playing); playing = null;
+  lapse.setAttribute('aria-pressed', 'false');
+  document.getElementById('lapseIcon').innerHTML = PLAY;
+}
+lapse.addEventListener('click', () => {
+  if (playing) return stopLapse();
+  if (+slider.value >= 1000) slider.value = 0;
+  lapse.setAttribute('aria-pressed', 'true');
+  document.getElementById('lapseIcon').innerHTML = PAUSE;
+  let last = performance.now();
+  const tick = now => {
+    const v = Math.min(1000, +slider.value + (now - last) / 10000 * 1000);   // ten seconds for a year
+    last = now;
+    slider.value = v; day = toDay(v); render();
+    if (v >= 1000) return stopLapse();
+    playing = requestAnimationFrame(tick);
+  };
+  playing = requestAnimationFrame(tick);
+});
+
+/* ---------- New memories start molten ---------- */
+let n = 0;
+function addMemory(title) {
+  memories.push({ id: 'n' + (n++), title, agent: 'You', visits: 1, touchedAt: day, fresh: true });
+  render();
+}
+document.getElementById('composer').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('say');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMemory(text);
+});
+document.getElementById('mic').addEventListener('click', () => addMemory('Voice note · 0:' + String(8 + (n * 7) % 50).padStart(2, '0')));
+
+/* ---------- Legend beside the phone ---------- */
+document.getElementById('legend').innerHTML = STAGES.map((s, i) => {
+  const t = [0.92, 0.66, 0.42, 0.2, 0.04][i];
+  const v = thermalVars(t);
+  const style = Object.entries(v).map(([k, val]) => `${k}:${val}`).join(';');
+  return `<li><span class="sw" style="${style}"><svg fill="currentColor"><use href="#${s.icon}"/></svg></span>` +
+         `<b>${s.name} · ${degrees(t)}°</b><span>${s.glyph}: ${s.note}</span></li>`;
+}).join('');
+
+render();
+</script>
+</body>
+</html>

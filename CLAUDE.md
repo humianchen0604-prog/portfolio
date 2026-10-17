@@ -9,6 +9,10 @@
   **Work on it now continues in its own repo, `humianchen0604-prog/languagelearning`**
   (the prototype at its root, with this folder's history). `papa/` here is a
   snapshot from when it moved; make new changes there, not here.
+- `memories/`: **Memory temperature**, a phone prototype for the memories tab
+  of the agent chat app. Saved memories cool from molten to frozen with time
+  since they were last revisited, shown in four layouts with a time scrub.
+  Read `memories/CLAUDE.md` before changing it.
 
 ## Working here
 
