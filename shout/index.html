@@ -24,7 +24,7 @@ button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--heat); outline-offset: 3px; }
 
 /* ---------- gallery chrome ---------- */
-.top { max-width: 1240px; margin: 0 auto 28px; display: grid; gap: 18px; }
+.top { max-width: 1060px; margin: 0 auto 28px; display: grid; gap: 18px; }
 .top h1 { margin: 0; font-weight: 800; font-size: clamp(40px, 7vw, 76px); line-height: .9; letter-spacing: -.045em; text-wrap: balance; }
 .top h1 span { font-weight: 200; letter-spacing: -.03em; }
 .top p { margin: 0; color: var(--muted); max-width: 60ch; }
@@ -42,8 +42,7 @@ button { font: inherit; color: inherit; }
 .note { font-size: 13px; color: var(--muted); }
 .note.err { color: #ffb08a; }
 
-.grid { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 28px 20px; }
-@media (max-width: 460px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; } }
+.grid { max-width: 1060px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 32px 28px; }
 figure { margin: 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
 figcaption { display: grid; gap: 2px; min-width: 0; }
 figcaption .num { font: 11px var(--mono); color: var(--heat); letter-spacing: .08em; }
@@ -70,9 +69,8 @@ figcaption span:last-child { color: var(--muted); font-size: 13px; line-height: 
 .stage { position: absolute; left: calc(30 * var(--u)); width: calc(342 * var(--u)); top: calc(130 * var(--u)); height: calc(460 * var(--u)); display: flex; align-items: center; justify-content: center; }
 .line { margin: 0; width: 100%; text-align: center; font: 300 calc(36 * var(--u))/1.2 var(--sans); letter-spacing: -.025em; color: var(--ink); transition: opacity .32s ease; transform-origin: 50% 50%; }
 .line.out { opacity: 0; }
-.w { display: inline-block; color: rgba(255, 248, 238, .18); transition: color .2s ease, opacity .2s ease; }
-.w.on { color: var(--ink); }
-.fx { position: absolute; inset: 0; pointer-events: none; }
+.w { display: none; }
+.w.on { display: inline-block; }
 .dock { position: absolute; top: calc(764 * var(--u)); left: calc(132 * var(--u)); display: flex; gap: calc(22 * var(--u)); }
 .dock span { width: calc(58 * var(--u)); height: calc(58 * var(--u)); box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; color: #fff;
   background: rgba(255, 255, 255, .1); border: 1px solid rgba(64, 64, 64, .5); backdrop-filter: blur(calc(7.5 * var(--u))); box-shadow: -1px 3px 6px rgba(0, 0, 0, .08); }
@@ -82,65 +80,22 @@ body.mic .dock span:first-child { background: rgba(255, 106, 43, .22); box-shado
 
 /* Shared emphasis: --e is loudness shaped 0..1, --fit shrinks a word that would leave the frame. */
 .w.on { --fs: 1; font-size: calc(36 * var(--u) * var(--fs) * var(--fit, 1)); }
-@keyframes pop { from { transform: scale(.55); opacity: .15; } }
+@keyframes pop { from { transform: scale(.55); opacity: 0; } }
+@keyframes rise { from { transform: translateY(calc(10 * var(--u))); opacity: 0; } }
 
 /* 01 Swell */
 [data-v="swell"] .w.on { --fs: calc(1 + var(--e) * 1.1); font-weight: calc(300 + var(--e) * 600); letter-spacing: calc(-.025em - var(--e) * .03em); animation: pop .45s cubic-bezier(.2, 1.6, .4, 1); }
 
-/* 02 Sideways */
-@keyframes turn { from { rotate: var(--from, 0deg); } }
-[data-v="sideways"] .w.on { --fs: calc(1 + var(--e) * .45); font-weight: calc(300 + var(--e) * 500); rotate: var(--tilt, 0deg); animation: turn .5s cubic-bezier(.3, 1.6, .5, 1); }
-[data-v="sideways"] .w.on.side { --fs: calc(1 + var(--e) * .75); writing-mode: vertical-rl; vertical-align: middle; font-weight: 820; line-height: 1; padding: .08em 0; }
-
-/* 03 Poster */
+/* 02 Poster */
 @keyframes slide { from { transform: translateX(calc(var(--dir, 1) * -30 * var(--u))); opacity: 0; } }
-[data-v="poster"] .stage { align-items: flex-start; top: calc(138 * var(--u)); height: calc(600 * var(--u)); }
-[data-v="poster"] .line { text-align: left; line-height: 1.05; transform-origin: 50% 0; }
-[data-v="poster"] .w { display: none; }
-[data-v="poster"] .w.on { display: inline-block; --fs: calc(.75 + var(--e) * .6); font-weight: calc(350 + var(--e) * 550); animation: slide .35s cubic-bezier(.2, .9, .3, 1); }
+[data-v="poster"] .stage { top: calc(130 * var(--u)); height: calc(600 * var(--u)); }
+[data-v="poster"] .line { text-align: left; line-height: 1.05; }
+[data-v="poster"] .w.on { --fs: calc(.75 + var(--e) * .6); font-weight: calc(350 + var(--e) * 550); animation: slide .35s cubic-bezier(.2, .9, .3, 1); }
 [data-v="poster"] .w.on.big { display: block; width: fit-content; font-size: calc(var(--px) * var(--u)); text-transform: uppercase; line-height: .9; letter-spacing: -.045em; }
 [data-v="poster"] .w.on.big.right { margin-left: auto; --dir: -1; }
 
-/* 04 Quake */
-[data-v="quake"] .w.on { --fs: calc(1 + var(--e) * .45); font-weight: calc(300 + var(--e) * 600); }
-[data-v="quake"] .w.on.loud { text-transform: uppercase; }
-
-/* 05 Slam */
-@keyframes slam {
-  0% { transform: translateY(calc((-140 - var(--e) * 220) * var(--u))) scale(calc(1.6 + var(--e) * 1.8)); opacity: 0; }
-  60% { opacity: 1; }
-  72% { transform: scale(calc(1 + var(--e) * .4), calc(1 - var(--e) * .38)); }
-  86% { transform: scale(calc(1 - var(--e) * .08), calc(1 + var(--e) * .1)); }
-  100% { transform: none; }
-}
-[data-v="slam"] .w { opacity: 0; }
-[data-v="slam"] .w.on { opacity: 1; --fs: calc(1 + var(--e) * .8); font-weight: calc(400 + var(--e) * 500); transform-origin: 50% 90%; animation: slam calc(.42s + var(--e) * .18s) cubic-bezier(.55, 0, .7, 1) both; }
-[data-v="slam"] .w.on.loud { text-transform: uppercase; letter-spacing: -.04em; }
-
-/* 06 Heat */
-[data-v="heat"] .w.on { --fs: calc(1 + var(--e) * .35); font-weight: calc(300 + var(--e) * 450);
-  color: hsl(calc(40 - var(--e) * 30) 100% calc(96% - var(--e) * 40%));
-  text-shadow: 0 0 calc(var(--e) * 16 * var(--u) * (.6 + var(--live))) hsl(calc(32 - var(--e) * 22) 100% 52% / calc(var(--e) * .9)),
-               0 0 calc(var(--e) * 44 * var(--u)) hsl(10 100% 45% / calc(var(--e) * .55)); }
-[data-v="heat"] .heat { transform: scaleY(calc(1.15 + var(--live) * 3.2)); filter: blur(calc(18 * var(--u))) saturate(calc(1 + var(--live))); }
-
-/* 07 Drawl */
-[data-v="drawl"] .w.on { --fs: calc(1 + var(--e) * .3); font-weight: calc(300 + var(--e) * 550); letter-spacing: calc(-.025em + var(--e) * .1em); }
-
-/* 08 Thrown */
-[data-v="thrown"] .stage { left: calc(70 * var(--u)); width: calc(262 * var(--u)); }
-[data-v="thrown"] .w.thrown { color: rgba(255, 248, 238, .14); }
-.toss { position: absolute; white-space: nowrap; line-height: 1; letter-spacing: -.04em; color: var(--ink); translate: -50% -50%; text-transform: uppercase; }
-
-/* 09 Echo */
-@keyframes ring { from { transform: scale(1); opacity: 0; } 30% { opacity: .9; } }
-[data-v="echo"] .w.on { position: relative; --fs: calc(1 + var(--e) * .5); font-weight: calc(300 + var(--e) * 600); }
-.echo { position: absolute; inset: 0; color: transparent; -webkit-text-stroke: calc(1.1 * var(--u)) var(--ink); transform: scale(calc(1 + var(--k) * .17)); opacity: calc((.5 - var(--k) * .09) * (.45 + var(--live) * 1.2)); animation: ring .7s ease-out calc(var(--k) * 70ms) both; pointer-events: none; }
-
-/* 10 In your face */
-[data-v="face"] .w.on { --fs: calc(1 + var(--e) * .4); font-weight: calc(300 + var(--e) * 600); }
-[data-v="face"] .line.dim { opacity: .2; transition-duration: .12s; }
-.blast { position: absolute; left: 50%; top: calc(360 * var(--u)); white-space: nowrap; font-weight: 900; line-height: 1; letter-spacing: -.05em; text-transform: uppercase; color: var(--ink); }
+/* 03 Drawl */
+[data-v="drawl"] .w.on { --fs: calc(1 + var(--e) * .3); font-weight: calc(300 + var(--e) * 550); letter-spacing: calc(-.025em + var(--e) * .1em); animation: rise .3s cubic-bezier(.2, .9, .3, 1); }
 
 /* ---------- full-size view ---------- */
 .backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(5, 3, 4, .88); backdrop-filter: blur(6px); }
@@ -151,13 +106,13 @@ body.mic .dock span:first-child { background: rgba(255, 106, 43, .22); box-shado
 figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; left: 50%; top: calc(50% + 24px); translate: -50% -50%; width: min(calc((100vh - 96px) * 402 / 874), calc(100vw - 32px), 460px); height: auto; aspect-ratio: 402 / 874; cursor: default; }
 
 @media (prefers-reduced-motion: reduce) {
-  .w, .w.on, .echo { animation: none !important; }
+  .w.on { animation: none !important; }
 }
 </style>
 
 <header class="top">
   <h1>Reply, <span>shouted</span></h1>
-  <p>Ten ways for Die Hard's reply to shout. Each word's weight, size, angle or heat comes from how loud it was said. The demo voice plays scripted stress; switch to your mic and read the line aloud, shouting the words you want big.</p>
+  <p>Three ways for Die Hard's reply to shout. Words appear only as they're said, and each one's weight and size come from how loud it was. The demo voice plays scripted stress; switch to your mic and read the line aloud, shouting the words you want big.</p>
   <div class="bar" id="bar">
     <div class="seg" role="group" aria-label="Voice">
       <button type="button" data-action="demo" aria-pressed="true">Demo voice</button>
@@ -184,41 +139,18 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
   ].map(s => { const t = s.split(" "), out = []; for (let i = 0; i < t.length; i += 2) out.push({ text: t[i], level: +t[i + 1] }); return out; });
 
   const VARIANTS = [
-    { key: "swell",    name: "Swell",        note: "Louder words get heavier and bigger." },
-    { key: "sideways", name: "Sideways",     note: "Stressed words tip over; the loudest turn fully sideways." },
-    { key: "poster",   name: "Poster",       note: "Every shouted word takes its own line, as wide as it was loud." },
-    { key: "quake",    name: "Quake",        note: "Words tremble while you're loud. More stress, harder shake." },
-    { key: "slam",     name: "Slam",         note: "Words drop in. Loud ones land hard enough to shake the phone." },
-    { key: "heat",     name: "Heat",         note: "Stress heats words from cream to red; the heat floor rises with your voice." },
-    { key: "drawl",    name: "Drawl",        note: "Loud words stretch their vowels: shruuuug." },
-    { key: "thrown",   name: "Thrown",       note: "Shouted words fly out of the sentence and land across the screen." },
-    { key: "echo",     name: "Echo",         note: "Loud words ring out in outlined echoes that pulse with your voice." },
-    { key: "face",     name: "In your face", note: "Loud words fill the screen for a beat, then settle back, bold." },
+    { key: "swell",  name: "Swell",  note: "Louder words get heavier and bigger." },
+    { key: "poster", name: "Poster", note: "Every shouted word takes its own line, as wide as it was loud." },
+    { key: "drawl",  name: "Drawl",  note: "Loud words stretch their vowels: shruuuug." },
   ];
 
   const MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>';
   const END = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>';
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hash = n => { const x = Math.sin(n * 12.9898) * 43758.5453; return x - Math.floor(x); };
   const shape = l => Math.pow(Math.max(0, Math.min(1, l)), 1.3);
 
-  // Per-variant behaviour beyond CSS: what happens when a word lands, and every frame.
+  // Per-variant behaviour beyond CSS: what happens when a word lands.
   const BEHAVIOUR = {
-    sideways: {
-      reveal(p, w) {
-        const sign = w.r < .5 ? -1 : 1;
-        if (w.e > .6) {
-          const flip = w.r < .5;
-          w.el.classList.add("side");
-          w.el.style.setProperty("--tilt", flip ? "180deg" : "0deg");
-          w.el.style.setProperty("--from", flip ? "270deg" : "-90deg");
-        } else {
-          const deg = w.e > .28 ? sign * (6 + w.e * 34) : 0;
-          w.el.style.setProperty("--tilt", deg + "deg");
-          w.el.style.setProperty("--from", "0deg");
-        }
-      },
-    },
     poster: {
       reveal(p, w) {
         if (w.e >= .45) {
@@ -230,30 +162,6 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
         }
       },
       fit: false,
-    },
-    quake: {
-      reveal(p, w) { if (w.e > .7) w.el.classList.add("loud"); },
-      frame(p, live) {
-        if (reduced) return;
-        const u = p.u();
-        for (const w of p.words) {
-          if (!w.on) continue;
-          const a = (w.e * .25 + live * w.e * 1.6) * 5 * u;
-          w.el.style.translate = `${(Math.random() * 2 - 1) * a}px ${(Math.random() * 2 - 1) * a}px`;
-          w.el.style.rotate = `${(Math.random() * 2 - 1) * a / u * .8}deg`;
-        }
-      },
-    },
-    slam: {
-      reveal(p, w) {
-        if (w.e > .7) w.el.classList.add("loud");
-        if (reduced || w.e < .3) return;
-        const u = p.u(), a = w.e * 9 * u;
-        setTimeout(() => p.screen.animate([
-          { transform: "none" }, { transform: `translate(${-a}px, ${a * .6}px)` }, { transform: `translate(${a * .7}px, ${-a * .4}px)` },
-          { transform: `translate(${-a * .3}px, ${a * .2}px)` }, { transform: "none" },
-        ], { duration: 260, easing: "ease-out" }), (420 + w.e * 180) * .7);
-      },
     },
     drawl: {
       reveal(p, w) {
@@ -273,66 +181,6 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
         grow();
       },
     },
-    thrown: {
-      // centre point, angle and longest length (u) for each landing spot; the side ones run up the edges
-      SLOTS: [ { x: 372, y: 400, rot: 90, max: 460 }, { x: 132, y: 196, rot: -11, max: 250 }, { x: 262, y: 664, rot: 8, max: 260 },
-               { x: 30, y: 430, rot: -90, max: 460 }, { x: 292, y: 206, rot: 13, max: 200 }, { x: 128, y: 652, rot: -9, max: 230 },
-               { x: 201, y: 720, rot: 0, max: 300 } ],
-      reveal(p, w) {
-        if (w.e < .55 || p.tossed >= this.SLOTS.length) return;
-        const s = this.SLOTS[p.tossed++], u = p.u();
-        w.el.classList.add("thrown");
-        const t = document.createElement("span");
-        t.className = "toss";
-        t.textContent = w.text;
-        t.style.fontWeight = Math.round(500 + w.e * 400);
-        t.style.left = `calc(${s.x} * var(--u))`;
-        t.style.top = `calc(${s.y} * var(--u))`;
-        let fs = Math.min(36 * (1 + w.e * 1.5), Math.abs(s.rot) === 90 ? 52 : 99);
-        t.style.fontSize = `calc(${fs} * var(--u))`;
-        p.fx.append(t);
-        if (t.offsetWidth > s.max * u) { fs *= s.max * u / t.offsetWidth; t.style.fontSize = `calc(${fs.toFixed(1)} * var(--u))`; }
-        const rot = s.rot + (w.r - .5) * 10;
-        t.style.rotate = rot + "deg";
-        if (reduced) return;
-        const a = w.el.getBoundingClientRect(), sc = p.screen.getBoundingClientRect();
-        const dx = a.left + a.width / 2 - sc.left - s.x * u, dy = a.top + a.height / 2 - sc.top - s.y * u;
-        t.animate([{ translate: `calc(-50% + ${dx}px) calc(-50% + ${dy}px)`, rotate: "0deg", scale: .3, opacity: .2 }, { translate: "-50% -50%", rotate: rot + "deg", scale: 1, opacity: 1 }],
-          { duration: 520, easing: "cubic-bezier(.2, 1.25, .4, 1)" });
-      },
-    },
-    echo: {
-      reveal(p, w) {
-        if (w.e < .4) return;
-        const n = Math.round(w.e * 4);
-        for (let k = 1; k <= n; k++) {
-          const e = document.createElement("span");
-          e.className = "echo"; e.textContent = w.text; e.style.setProperty("--k", k); e.setAttribute("aria-hidden", "true");
-          w.el.append(e);
-        }
-      },
-    },
-    face: {
-      reveal(p, w) {
-        if (w.e < .45 || reduced) return;
-        const b = document.createElement("span"), u = p.u();
-        b.className = "blast"; b.textContent = w.text;
-        b.style.fontSize = "calc(100 * var(--u))";
-        p.fx.append(b);
-        const fs = 100 * (402 * (.85 + w.e * .75) * u) / b.offsetWidth;
-        b.style.fontSize = `calc(${fs.toFixed(1)} * var(--u))`;
-        p.line.classList.add("dim");
-        const c = "translate(-50%, -50%)";
-        b.animate([
-          { transform: `${c} scale(.12)`, opacity: 0, filter: "blur(6px)" },
-          { transform: `${c} scale(1)`, opacity: 1, filter: "blur(0px)", offset: .32 },
-          { transform: `${c} scale(1.04)`, opacity: 1, offset: .7 },
-          { transform: `${c} scale(1.3)`, opacity: 0 },
-        ], { duration: 820, easing: "cubic-bezier(.2, .8, .3, 1)", fill: "forwards" }).onfinish = () => b.remove();
-        clearTimeout(p.dimTimer);
-        p.dimTimer = setTimeout(() => p.line.classList.remove("dim"), 600);
-      },
-    },
   };
 
   class Phone {
@@ -348,7 +196,6 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
               <div class="cast" aria-hidden="true"><img class="side" src="assets/agent-1.png" alt=""><img class="main" src="assets/agent-2.png" alt=""><img class="side" src="assets/agent-3.png" alt=""></div>
               <span class="who" aria-hidden="true">Die Hard</span>
               <div class="stage"><p class="line" aria-live="off"></p></div>
-              <div class="fx" aria-hidden="true"></div>
               <div class="dock" aria-hidden="true"><span>${MIC}</span><span>${END}</span></div>
             </div>
           </div>
@@ -359,14 +206,12 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
       this.screen = fig.querySelector(".screen");
       this.stage = fig.querySelector(".stage");
       this.line = fig.querySelector(".line");
-      this.fx = fig.querySelector(".fx");
       this.words = [];
     }
     u() { return this.screen.clientWidth / 402; }
     setLine(words, li) {
-      this.line.textContent = ""; this.fx.textContent = "";
-      this.line.classList.remove("out", "dim"); this.line.style.scale = "";
-      this.tossed = 0;
+      this.line.textContent = "";
+      this.line.classList.remove("out"); this.line.style.scale = "";
       this.words = words.map((w, i) => {
         const el = document.createElement("span");
         el.className = "w"; el.textContent = w.text;
@@ -381,7 +226,7 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
       w.el.style.setProperty("--e", w.e.toFixed(3));
       w.el.classList.add("on");
       this.b.reveal?.(this, w);
-      if (this.b.fit !== false && !w.el.classList.contains("side")) this.fit(w);
+      if (this.b.fit !== false) this.fit(w);
       // keep the whole reply inside its area
       const h = this.line.offsetHeight, H = this.stage.clientHeight;
       this.line.style.scale = h > H ? (H / h).toFixed(3) : "";
@@ -391,8 +236,7 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
       const max = this.stage.clientWidth, width = w.el.offsetWidth;
       if (width > max) w.el.style.setProperty("--fit", (max / width).toFixed(3));
     }
-    out() { this.line.classList.add("out"); this.fx.textContent = ""; }
-    frame(live) { this.b.frame?.(this, live); }
+    out() { this.line.classList.add("out"); }
   }
 
   const grid = document.getElementById("grid");
@@ -495,7 +339,7 @@ figure.open .phone { position: fixed; z-index: 50; right: auto; bottom: auto; le
     else S.db = S.live > .01 ? -58 + S.live * 42 : -Infinity;
     const live = S.live.toFixed(3);
     document.documentElement.style.setProperty("--live", live);
-    for (const p of phones) { p.screen.style.setProperty("--live", live); p.frame(S.live); }
+    for (const p of phones) p.screen.style.setProperty("--live", live);
     $db.textContent = S.db > -90 ? `${Math.round(S.db)} dBFS` : "−∞ dBFS";
     requestAnimationFrame(loop);
   }
