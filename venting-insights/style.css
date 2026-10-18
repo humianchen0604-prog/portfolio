@@ -1,0 +1,1496 @@
+:root {
+  color-scheme: dark;
+  /* Motion */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Agent colour switch: one shared, quick timing for background, theme tint and glow.
+     Strong ease-out so most of the change lands in the first ~100ms after a tap. */
+  --color-dur: 280ms;
+  --color-ease: var(--ease-out);
+
+  /* Layout */
+  --kb-h: 335px;          /* 52 suggestions + 205 keys + 78 bottom bar */
+  --composer-gap: 14px;   /* composer → keyboard */
+  --composer-rest: max(34px, env(safe-area-inset-bottom)); /* composer → screen bottom when keyboard is closed */
+
+  /* Type */
+  --font-ui: -apple-system, "SF Pro Text", "SF Pro", system-ui, sans-serif;
+  --font-key: "SF Compact", "SF Compact Text", -apple-system, "SF Pro Text", system-ui, sans-serif;
+  --font-body: "Geist", -apple-system, system-ui, sans-serif;
+
+  --peach: #fed5cc;
+}
+
+/* Theme colour per agent; registered so it can transition with the background */
+@property --theme {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgb(255, 106, 31);
+}
+
+.phone {
+  --voice-glow-opacity: 0.55;
+  /* Text + icons in the composer: white with a little of the theme mixed in,
+     so they read warm on Ride-or-Die (the original #FED5CC peach) and cool on Roaster */
+  --ink: color-mix(in srgb, var(--theme) 22%, #fff);
+  --ink-placeholder: 0.5;
+  transition: --theme var(--color-dur) var(--color-ease);
+}
+.phone[data-agent="0"] { --theme: rgb(124, 96, 255); }  /* Roaster · violet */
+.phone[data-agent="1"] { --theme: rgb(255, 106, 31); }  /* Ride-or-Die · lava orange */
+.phone[data-agent="2"] { --theme: rgb(150, 230, 90); }  /* Calm Sibling · green */
+
+/* Theme tint follows the artwork when a different background style is picked */
+.phone[data-bg="edge"][data-agent="0"] { --theme: rgb(40, 110, 255); }
+.phone[data-bg="edge"][data-agent="1"] { --theme: rgb(255, 104, 40); }
+.phone[data-bg="edge"][data-agent="2"] { --theme: rgb(40, 230, 120); }
+.phone[data-bg="haze"][data-agent="0"] { --theme: rgb(80, 120, 235); }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #0b0b0b;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+img { display: block; -webkit-user-drag: none; user-select: none; }
+
+/* ───────────────────────── Frame ───────────────────────── */
+
+.phone {
+  position: relative;
+  width: 402px;
+  height: 874px;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media (max-width: 500px), (max-height: 874px) and (pointer: coarse) {
+  body { display: block; }
+  .phone { width: 100vw; height: 100dvh; }
+}
+
+/* ───────────────────────── Background ───────────────────────── */
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* own stacking context, so the crossfade z-indexes stay underneath everything */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--color-dur) var(--color-ease);
+}
+
+.phone[data-bg="vent"] .bg--vent,
+.phone[data-bg="lava"] .bg--lava,
+.phone[data-bg="edge"] .bg--edge,
+.phone[data-bg="haze"] .bg--haze { opacity: 1; }
+
+/* Lava — the Figma background */
+.bg--lava {
+  inset: auto;
+  left: calc(50% - 840px);
+  top: 194px;
+  width: 1686px;
+  height: 1296px;
+}
+
+.bg-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--color-dur) var(--color-ease);
+}
+
+.bg-layer.is-visible { opacity: 1; }
+
+.bg--lava .bg-layer img {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 1710px;
+  height: 1320px;
+  opacity: 0.6; /* 40% softer than the Figma art (0.75 × 0.8) */
+}
+
+/* Hue per agent — Ride-or-Die is the original lava palette */
+.bg--lava .bg-layer[data-for="0"] img { filter: hue-rotate(var(--hue-0)); }
+.bg--lava .bg-layer[data-for="2"] img { filter: hue-rotate(var(--hue-2)); }
+
+/* Edge glow — full-screen artwork, one per agent */
+.bg--edge { background: #000; }
+.bg--edge .bg-layer img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Softer than the source art: dimmer, and scaled up so the glow band
+     sits further out toward the screen edges */
+  opacity: var(--edge-glow-opacity);
+  transform: scale(var(--edge-glow-scale));
+  transform-origin: 50% 40%;
+}
+
+.bg--edge {
+  --edge-glow-opacity: 0.55;
+  --edge-glow-scale: 1.12;
+}
+
+/* Ride-or-Die: warm ember recolour (see #edge-ember in index.html), slightly desaturated */
+.bg--edge .bg-layer[data-for="1"] img { filter: url("#edge-ember") saturate(0.85); }
+
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Haze — dark sky falling into a deep side glow and a pale, grainy mist at the bottom */
+.bg--haze { background: #000; }
+.bg--haze .bg-layer {
+  background:
+    /* Colour kept to the lower third: the top ~55% of the screen stays black */
+    radial-gradient(150% 26% at 45% 104%, color-mix(in srgb, var(--haze-pale) calc(46% * var(--haze-pk, 1)), transparent) 0%, color-mix(in srgb, var(--haze-pale) calc(22% * var(--haze-pk, 1)), transparent) 55%, transparent 85%),
+    radial-gradient(70% 30% at 0% 82%, color-mix(in srgb, var(--haze-mid) 22%, transparent) 0%, transparent 75%),
+    radial-gradient(100% 44% at 108% 72%, color-mix(in srgb, var(--haze-deep) 44%, transparent) 0%, color-mix(in srgb, var(--haze-deep) 22%, transparent) 40%, transparent 78%),
+    /* a second hue for a little more colour: one wide, soft drift on the left that eases out to nothing */
+    radial-gradient(95% 24% at 6% 66%,
+      color-mix(in srgb, var(--haze-accent) 30%, transparent) 0%,
+      color-mix(in srgb, var(--haze-accent) 18%, transparent) 30%,
+      color-mix(in srgb, var(--haze-accent) 7%, transparent) 58%,
+      transparent 88%),
+    radial-gradient(120% 30% at 20% 100%,
+      color-mix(in srgb, var(--haze-accent) 22%, transparent) 0%,
+      color-mix(in srgb, var(--haze-accent) 9%, transparent) 50%,
+      transparent 90%),
+    linear-gradient(to bottom, transparent 56%, color-mix(in srgb, var(--haze-deep) 18%, transparent) 74%, color-mix(in srgb, var(--haze-mid) 44%, transparent) 90%, color-mix(in srgb, var(--haze-pale) calc(46% * var(--haze-pk, 1)), var(--haze-mid)) 100%),
+    #000;
+}
+.bg--haze .bg-layer[data-for="0"] { --haze-deep: rgb(0, 34, 128);  --haze-mid: rgb(64, 86, 146);  --haze-pale: rgb(146, 164, 194); --haze-accent: rgb(196, 112, 214); } /* Roaster · blue, a hint of pinkish purple */
+.bg--haze .bg-layer[data-for="1"] { --haze-deep: rgb(128, 30, 4);  --haze-mid: rgb(146, 82, 58);  --haze-pale: rgb(198, 168, 150); --haze-accent: rgb(232, 96, 150); } /* Ride-or-Die · ember, a hint of rose */
+.bg--haze .bg-layer[data-for="2"] { --haze-deep: rgb(8, 92, 40);   --haze-mid: rgb(66, 122, 86);  --haze-pale: rgb(158, 186, 160); --haze-accent: rgb(206, 222, 96); } /* Calm Sibling · moss, with yellow grass green */
+
+.bg-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1000; /* above every hue layer */
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* Overlay can't lift pure black, so the film grain screens a faint noise over everything:
+   visible in the blacks, near-invisible in the bright glow */
+.bg-grain--film {
+  mix-blend-mode: screen;
+  opacity: 0.09;
+}
+
+.phone {
+  --hue-0: -122deg;
+  --hue-1: 0deg;
+  --hue-2: 78deg;
+}
+
+/* ───────────────────────── Press feedback ───────────────────────── */
+
+.pressable {
+  transition: transform 160ms var(--ease-out);
+}
+
+.pressable:active,
+.pressable.is-down {
+  transform: scale(0.95);
+}
+
+/* ───────────────────────── Memories ───────────────────────── */
+
+.memories {
+  position: absolute;
+  left: 24px;
+  top: 60px;
+  width: 44px;
+  height: 44px;
+}
+
+.memories > * { position: absolute; }
+.memories-button {
+  /* Neutral dark bubble (no hue): soft top-lit gradient, a hairline rim and a faint inner glow */
+  inset: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 62%),
+    #0c0c0c;
+  box-shadow:
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.06),
+    inset 0 0.71px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -6px 12px -4px rgba(255, 255, 255, 0.03);
+}
+.memories-ring {
+  left: -0.71px;
+  top: -0.71px;
+  width: 45.419px;
+  height: 45.419px;
+  mix-blend-mode: plus-lighter;
+  opacity: 0.1;
+  filter: grayscale(1);
+}
+.memories-icon {
+  left: 10px;
+  top: 10px;
+  width: 24px;
+  height: 24px;
+  filter: grayscale(1) brightness(0.95); /* gold glyph → soft light gray */
+}
+
+/* ───────────────────────── Agents ───────────────────────── */
+
+.agents {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  width: 140px;   /* 32 + 16 + 44 + 16 + 32 */
+  height: 44px;
+  transform: translateX(-50%);
+  touch-action: none; /* horizontal drag spins the ring */
+  cursor: grab;
+}
+
+.agents.is-dragging { cursor: grabbing; }
+
+/* Avatars sit on a ring and are positioned every frame by script.js
+   (spring-driven rotation), so there is no CSS transition on transform. */
+.agent {
+  position: absolute;
+  left: 48px; /* centre slot: (140 - 44) / 2 */
+  top: 0;
+  width: 44px;
+  height: 44px;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.agent-press {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 160ms var(--ease-out);
+}
+
+.agent:active .agent-press,
+.agent.is-down .agent-press {
+  transform: scale(0.92);
+}
+
+.agent-photo {
+  position: absolute;
+  inset: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  opacity: 0.2;
+}
+
+.agent-chrome {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+}
+
+.agent-button {
+  /* Figma "Mic button" effects, drawn in CSS (the exported SVG filter renders flat in browsers) */
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle 51px at 50% 50%,
+    rgba(58, 42, 34, 0.1) 0%,
+    rgba(23, 15, 11, 0) 45%,
+    rgba(6, 3, 2, 0.1) 100%);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.05),
+    inset 0 0.71px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -8.516px 14.194px 5.677px rgba(255, 106, 31, 0.5);
+}
+
+.agent-ring {
+  position: absolute;
+  left: -0.71px;
+  top: -0.71px;
+  width: 45.419px;
+  height: 45.419px;
+}
+
+.agent-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  mix-blend-mode: plus-lighter;
+  opacity: 0.4;
+  pointer-events: none;
+}
+.agent-glow--wide { width: 45px; }
+.agent-glow--round { border-radius: 9999px; }
+
+.agent-labels {
+  position: absolute;
+  top: 115px;
+  left: 0;
+  right: 0;
+  height: 11px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* Effect names: same size and centre line as the original label (glyph box ≈ 11.5px);
+   each SVG is taller than the box so its bleed overflows evenly above and below */
+.agent-labels--fx {
+  top: 113.75px;
+  height: 13.5px;
+  /* fixed tracks: the SVG's bleed padding overflows evenly instead of growing the row/column */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.agent-labels--fx .agent-label { overflow: visible; }
+
+/* Calm Sibling's soft glow: one slow breath every ~5.5s, close to a resting breathing rate */
+.ne-breathe { animation: ne-breathe 5.5s ease-in-out infinite; }
+@keyframes ne-breathe {
+  0%, 100% { opacity: 0.28; }
+  50% { opacity: 0.62; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ne-breathe { animation: none; opacity: 0.45; }
+}
+
+.phone[data-name="original"] .agent-labels--fx,
+.phone:not([data-name="original"]) .agent-labels--original { display: none; }
+
+.agent-label {
+  grid-area: 1 / 1;
+  opacity: 0;
+  filter: blur(2px);
+  transform: translateY(3px);
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease,
+    transform 180ms var(--ease-out);
+}
+
+.agent-label.is-active {
+  opacity: 0.9;
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+.agent-label--text {
+  font-family: "Varela Round", var(--font-ui);
+  font-size: 11.5px;
+  line-height: 11px;
+  letter-spacing: 0.01em;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ───────────────────────── Keyboard ───────────────────────── */
+
+.keyboard,
+.kb-material {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--kb-h);
+  border-radius: 27px;
+  transform: translateY(0);
+  transition: transform var(--kb-dur) var(--ease-drawer);
+}
+
+.phone { --kb-dur: 380ms; }
+.phone[data-keyboard="closed"] { --kb-dur: 300ms; }
+
+.phone[data-keyboard="closed"] .keyboard,
+.phone[data-keyboard="closed"] .kb-material {
+  transform: translateY(calc(100% + 2px));
+}
+
+.phone[data-keyboard="closed"] .keyboard { pointer-events: none; }
+
+/* Keyboard material, from the Figma layer stack (plus-lighter, then luminosity) */
+.kb-material { pointer-events: none; }
+.kb-material--plus { background: #0d0d0d; mix-blend-mode: plus-lighter; }
+.kb-material--lum  { background: rgba(38, 38, 38, 0.9); mix-blend-mode: luminosity; }
+
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  touch-action: none;
+}
+
+.kb-suggestions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 52px;
+  padding: 0 8.5px;
+}
+
+.kb-suggestion {
+  flex: 1 0 0;
+  min-width: 1px;
+  height: 100%;
+  border-radius: 4.6px;
+  font-family: var(--font-ui);
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: -0.43px;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kb-suggestion.is-down { background: rgba(255, 255, 255, 0.12); }
+
+.kb-separator {
+  flex: none;
+  width: 1px;
+  height: 25px;
+  margin: 0 2px;
+  border-radius: 100px;
+  background: #fff;
+  opacity: 0.1;
+}
+
+.kb-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  width: 100%;
+  padding: 0 6.67px;
+}
+
+.kb-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.kb-row--inset { padding: 0 20px; }
+.kb-row--third { gap: 14.25px; justify-content: flex-start; }
+
+.kb-letters {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 1px;
+  gap: 6px;
+}
+
+/* Keys are typed hundreds of times — instant state change, no animation */
+.key {
+  flex: 1 0 0;
+  min-width: 1px;
+  height: 43px;
+  border-radius: 8.5px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #000;
+  font-family: var(--font-key);
+  font-size: 25px;
+  font-weight: 360; /* lighter than iOS (458) so the letters sit lighter on the tinted keys */
+  line-height: 30px;
+  padding-bottom: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.key.is-down { background: rgba(255, 255, 255, 0.95); }
+
+.phone[data-shift="on"] .key[data-char] { text-transform: uppercase; }
+
+.key--mod {
+  flex: none;
+  width: 45px;
+  padding-bottom: 1px;
+}
+
+.phone[data-shift="on"] .key[data-action="shift"] { background: #fff; }
+
+.key--wide { flex: none; width: 92px; }
+
+.key--abc {
+  font-size: 18px;
+  line-height: 21px;
+  padding-bottom: 0;
+}
+
+.key--space { background: rgba(237, 237, 237, 0.17); }
+.key--space.is-down { background: rgba(237, 237, 237, 0.4); }
+
+.key--return {
+  background: #08f;
+  color: #fff;
+  padding-bottom: 1px;
+}
+.key--return.is-down { background: #3aa0ff; }
+
+.kb-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 78px;
+  padding: 0 32px 2px;
+}
+
+.kb-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+/* ───────────────────────── Composer ───────────────────────── */
+
+.composer {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: var(--composer-rest);
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 0;
+  transform: translateY(calc(-1 * (var(--kb-h) + var(--composer-gap) - var(--composer-rest))));
+  transition: transform var(--kb-dur) var(--ease-drawer);
+}
+
+.phone[data-bg="vent"] .composer { --field-bg: rgb(138, 8, 17); } /* Vent paints this flat red behind the keys */
+.phone[data-keyboard="closed"] .composer { transform: translateY(0); }
+
+.field {
+  position: relative;
+  flex: 1 0 0;
+  min-width: 1px;
+  height: 52px; /* one line; input-grow.js sets taller heights as the text wraps */
+  border-radius: 26px;
+  background: var(--field-bg);
+  border: 0.839px solid var(--field-border);
+  box-shadow: var(--field-shadow);
+  -webkit-backdrop-filter: var(--field-blur);
+  backdrop-filter: var(--field-blur);
+  cursor: text;
+}
+
+/* Tinted glass — Apple-style dark material: heavier blur + saturation, a touch of the theme.
+   Shared with the voice button's base so the two read as one unit. */
+.phone {
+  --field-bg: color-mix(in srgb, var(--theme) 12%, rgba(14, 14, 16, 0.74));
+  --field-border: rgba(255, 255, 255, 0.1);
+  --field-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 8px 24px rgba(0, 0, 0, 0.22);
+  --field-blur: blur(24px) saturate(1.6);
+}
+
+.field-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--ink);
+}
+.field-icon--plus {
+  -webkit-mask: url("assets/icon-plus.svg") center / 100% 100% no-repeat;
+  mask: url("assets/icon-plus.svg") center / 100% 100% no-repeat;
+}
+.field-icon--mic {
+  -webkit-mask: url("assets/icon-mic.svg") center / 100% 100% no-repeat;
+  mask: url("assets/icon-mic.svg") center / 100% 100% no-repeat;
+}
+
+/* Positions are measured from the field's outer edge in Figma, minus the 0.839px border */
+.field-plus {
+  position: absolute;
+  left: 14.941px;
+  bottom: 15.839px;
+  width: 21.7007px;
+  height: 22px;
+}
+
+.field-mic {
+  position: absolute;
+  right: 15.161px;
+  bottom: 15.839px;
+  width: 22px;
+  height: 22px;
+}
+
+.field-input {
+  position: absolute;
+  left: 46.511px;
+  right: 44px;
+  top: 0;
+  bottom: 0;
+  width: auto;
+  margin: 0;
+  padding: 15px 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  overflow-y: hidden;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--ink);
+  caret-color: var(--ink);
+  -webkit-user-select: text;
+  user-select: text;
+  scrollbar-width: none;
+}
+.field-input::-webkit-scrollbar { display: none; }
+.field-input::placeholder {
+  font-size: 15px; /* 2px under the typed text */
+  color: var(--ink);
+  opacity: var(--ink-placeholder);
+}
+
+.voice {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+}
+
+.voice-orb {
+  position: absolute;
+  inset: 0;
+}
+
+.voice-orb > * { position: absolute; }
+.voice-base {
+  /* Figma "Mic button" effects, drawn in CSS (the exported SVG filter renders flat in browsers) */
+  inset: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--field-bg);
+  -webkit-backdrop-filter: var(--field-blur);
+  backdrop-filter: var(--field-blur);
+}
+.voice-glow {
+  display: none; /* the button wears the field's plain material, no agent glow */
+  inset: 0;
+  width: 52px;
+  height: 52px;
+  opacity: 0;
+  transition: opacity var(--color-dur) var(--color-ease);
+}
+.phone[data-agent="0"] .voice-glow[data-for="0"],
+.phone[data-agent="1"] .voice-glow[data-for="1"],
+.phone[data-agent="2"] .voice-glow[data-for="2"] { opacity: var(--voice-glow-opacity); }
+
+/* Same rim + highlight as the field, drawn above the glow so the two read as one material */
+.voice::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.839px var(--field-border), var(--field-shadow);
+  pointer-events: none;
+}
+
+/* Glyph tinted from the theme (Ride-or-Die → the original #FED5CC peach) */
+.voice-icon {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 32px;
+  height: 32px;
+  fill: var(--ink);
+  overflow: visible;
+}
+
+/* Typing turns the voice button into send (the field's own mic stays).
+   A quick crossfade with a touch of blur and scale, so it reads as one glyph becoming another. */
+.voice-icon,
+.voice-send,
+.field-mic {
+  transition: opacity 160ms ease, filter 160ms ease, transform 160ms var(--ease-out);
+}
+.voice-send {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  color: var(--ink);
+  opacity: 0;
+  filter: blur(2px);
+  transform: scale(0.8);
+  pointer-events: none;
+}
+.phone[data-typing="on"] .voice-icon { opacity: 0; filter: blur(2px); transform: scale(0.8); }
+.phone[data-typing="on"] .voice-send { opacity: 1; filter: blur(0); transform: none; }
+/* the field's mic stays put while typing, on one line or several: it sits on the bottom line as the field grows */
+
+/* ───────────────────────── Pre-screen (first visit, no agent yet) ───────────────────────── */
+
+/* Agent switcher only on the old screen */
+.agents,
+.agent-labels { transition: opacity 200ms ease; }
+.phone[data-screen="pre"] .agents,
+.phone[data-screen="pre"] .agent-labels { opacity: 0; pointer-events: none; }
+
+.phone { --font-display: "Instrument Serif", "New York", Georgia, serif; }
+
+/* Fills the space between the top bar and the composer, and follows the keyboard */
+.pre {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 112px;
+  bottom: calc(var(--kb-h) + var(--composer-gap) + 52px + 14px);
+  display: none;
+  font-family: var(--font-body);
+  color: var(--ink);
+  transition: bottom var(--kb-dur) var(--ease-drawer);
+}
+.phone[data-keyboard="closed"] .pre { bottom: calc(var(--composer-rest) + 52px + 18px); }
+.phone[data-screen="pre"] .pre { display: block; }
+
+.pre-variant {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 0 24px;
+}
+.phone[data-pre="5"] .pre-variant[data-v="5"],
+.phone[data-pre="1"] .pre-variant[data-v="1"],
+.phone[data-pre="2"] .pre-variant[data-v="2"],
+.phone[data-pre="4"] .pre-variant[data-v="4"] { display: flex; }
+
+/* Staggered blur-up on entry (re-triggered by script.js on every switch) */
+@keyframes pre-in {
+  from { opacity: 0; transform: translateY(10px); filter: blur(6px); }
+}
+.pre-variant.is-entering [style*="--i"] {
+  animation: pre-in 520ms var(--ease-out) both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+.pre-center {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.pre-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.pre-title em {
+  font-style: italic;
+  color: color-mix(in srgb, var(--theme) 55%, #fff);
+}
+.pre-title--big { font-size: 48px; }
+
+.pre-sub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink);
+  opacity: 0.5;
+  text-wrap: balance;
+}
+
+.pre-label {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--ink);
+  opacity: 0.4;
+}
+
+/* Starters step aside while typing, like ChatGPT's suggestions */
+.pre-starters {
+  flex: none;
+  transition: opacity 180ms ease, transform 220ms var(--ease-out), filter 180ms ease;
+}
+.phone[data-typing="on"] .pre-starters {
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.pre-hit { -webkit-user-select: none; user-select: none; }
+
+/* Shared glass, same material as the composer field */
+.pre-glass,
+.pre-person,
+.pre-bubble {
+  background: var(--field-bg);
+  border: 0.839px solid var(--field-border);
+  box-shadow: var(--field-shadow);
+  -webkit-backdrop-filter: var(--field-blur);
+  backdrop-filter: var(--field-blur);
+}
+
+/* ── 1 · Starters ── */
+
+.pre-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pre-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  height: 46px;
+  padding: 0 4px;
+  border-radius: 12px;
+  text-align: left;
+  transition: background-color 150ms ease, transform 160ms var(--ease-out);
+}
+.pre-row:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.05); }
+.pre-row-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.6;
+}
+.pre-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.82;
+}
+.pre-row-meta {
+  flex: none;
+  font-size: 12px;
+  opacity: 0.38;
+}
+
+/* ── 2 · Remember… ── */
+
+.pre-title--remember { font-size: 38px; }
+.pre-rotator {
+  display: block;
+  height: 1.1em;
+  margin-top: 2px;
+}
+.pre-rotator em {
+  display: inline-block;
+  transition: opacity 220ms ease, transform 320ms var(--ease-out), filter 220ms ease;
+}
+.pre-rotator.is-out em {
+  opacity: 0;
+  transform: translateY(-8px);
+  filter: blur(6px);
+}
+.pre-rotator.is-in em {
+  transition: none;
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(6px);
+}
+
+.pre-people {
+  display: flex;
+  gap: 8px;
+  margin: 0 -24px;
+  padding: 2px 24px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-mask: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+.pre-people::-webkit-scrollbar { display: none; }
+
+.pre-person {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 52px;
+  padding: 0 14px 0 8px;
+  border-radius: 26px;
+  text-align: left;
+  transition: transform 160ms var(--ease-out);
+}
+.pre-person:active { transform: scale(0.96); }
+.pre-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 14px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 35% 30%, hsl(var(--hue) 70% 72% / 0.9), hsl(var(--hue) 60% 38% / 0.9) 70%);
+  box-shadow: inset 0 0.7px 0 rgba(255, 255, 255, 0.35);
+}
+.pre-avatar--icon { background: rgba(255, 255, 255, 0.1); }
+.pre-avatar svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pre-person-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  white-space: nowrap;
+}
+.pre-person-text b { font-weight: 400; font-size: 14px; }
+.pre-person-text small { font-size: 12px; opacity: 0.45; }
+
+/* ── 4 · Lava texts first ── */
+
+.pre-variant--chat { justify-content: flex-end; gap: 18px; }
+
+.pre-thread {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.pre-stamp {
+  align-self: center;
+  margin: 0 0 8px;
+  font-size: 11px;
+  opacity: 0.38;
+}
+.pre-bubble,
+.pre-typing {
+  max-width: 80%;
+  padding: 10px 15px;
+  border-radius: 20px 20px 20px 6px;
+  font-size: 16px;
+  line-height: 1.35;
+}
+.pre-bubble { display: none; }
+.pre-bubble.is-shown { display: block; animation: bubble-in 360ms var(--ease-out) both; }
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); transform-origin: 0 100%; }
+}
+
+.pre-typing {
+  display: none;
+  gap: 4px;
+  align-items: center;
+  height: 40px;
+  background: var(--field-bg);
+  border: 0.839px solid var(--field-border);
+}
+.pre-typing.is-shown { display: flex; }
+.pre-typing i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+  opacity: 0.3;
+  animation: typing 1s ease-in-out infinite;
+}
+.pre-typing i:nth-child(2) { animation-delay: 150ms; }
+.pre-typing i:nth-child(3) { animation-delay: 300ms; }
+@keyframes typing {
+  30% { opacity: 0.8; transform: translateY(-2px); }
+}
+
+.pre-replies {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.pre-replies:not(.is-shown) { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.pre-reply {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 0.839px solid color-mix(in srgb, var(--theme) 45%, rgba(255, 255, 255, 0.2));
+  font-size: 14px;
+  color: color-mix(in srgb, var(--theme) 35%, #fff);
+  transition: transform 160ms var(--ease-out), background-color 150ms ease;
+}
+.pre-reply:active { transform: scale(0.96); background: color-mix(in srgb, var(--theme) 15%, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pre-variant.is-entering [style*="--i"],
+  .pre-bubble.is-shown { animation: none; }
+  .pre-rotator em { transition-duration: 0ms; }
+}
+
+/* ───────────────────────── Style picker (design exploration) ───────────────────────── */
+
+.style-pickers {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.style-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #1a1a1c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.style-picker-title {
+  padding: 2px 8px 6px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.style-picker button {
+  padding: 7px 10px;
+  border-radius: 8px;
+  text-align: left;
+  transition: background-color 150ms ease, transform 160ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .style-picker button:hover { background: rgba(255, 255, 255, 0.06); }
+}
+
+.style-picker button:active { transform: scale(0.97); }
+.style-picker button[aria-checked="true"] { background: rgba(255, 255, 255, 0.12); color: #fff; }
+
+@media (max-width: 900px) {
+  .style-pickers { display: none; }
+}
+
+/* ───────────────────────── Reduced motion ───────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .phone, .phone[data-keyboard="closed"] { --kb-dur: 0ms; }
+  .agent, .pressable, .agent-press { transition-duration: 0ms; }
+  .agent-label { transform: none !important; filter: none !important; }
+}
+
+/* ───────────────────────── Vent background ───────────────────────── */
+
+.bg--vent { background: #000; }
+.bg--vent canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.92;
+}
+.phone[data-bg="vent"][data-agent="1"] { --theme: rgb(255, 104, 40); }
+
+/* ───────────────────────── "Ready to vent?" first screen ───────────────────────── */
+
+.vent-center { padding-top: 35px; }
+.vent-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: normal;
+  letter-spacing: -0.44px;
+  color: #fff;
+}
+
+/* Recent chats: horizontal strip that bleeds off the right edge */
+.vent-cards {
+  display: flex;
+  gap: 8px;
+  margin: 0 -24px;
+  padding: 0 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.vent-cards::-webkit-scrollbar { display: none; }
+
+.vent-card {
+  position: relative;
+  flex: none;
+  width: 136px;
+  height: 90px;
+  padding: 0 12px;
+  display: block;
+  text-align: left;
+  border-radius: 16px;
+  border: 0;
+  /* white frosted glass: the cloud's own colour shows through instead of going grey */
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 40.1px 3px rgba(255, 255, 255, 0.28);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(16px) saturate(1.3);
+}
+.vent-card:first-child { width: 140px; }
+.vent-card:first-child .vent-card-title { max-width: 116px; }
+.vent-card:active { transform: scale(0.97); }
+
+.vent-avatar {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  font-size: 13px;
+  color: #fff;
+  opacity: 1;
+}
+.vent-avatar svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.vent-card-title,
+.vent-card-meta {
+  position: absolute;
+  left: 12px;
+  white-space: nowrap;
+}
+.vent-card-title {
+  top: 46px;
+  max-width: 112px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  letter-spacing: -0.28px;
+  color: #fff;
+  opacity: 1;
+  text-shadow: 0 1px 4px rgba(60, 0, 4, 0.2);
+}
+.vent-card-meta {
+  top: 64px;
+  font-size: 12px;
+  letter-spacing: -0.24px;
+  color: #ffe3dd;
+  opacity: 0.88;
+  text-shadow: 0 1px 4px rgba(60, 0, 4, 0.2);
+}
+
+/* ───────────────────────── Voice button: listening animation on load ─────────────────────────
+   Each pill of the glyph stretches and squashes about its own centre, keeping its oval ends.
+   Keyframes start and end at rest, so when script.js stops a pill after a full cycle it lands
+   exactly on the default glyph. */
+
+.voice-pill {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes voice-pill {
+  0%, 100% { transform: scaleY(1); }
+  25% { transform: scaleY(1.55); }
+  55% { transform: scaleY(0.62); }
+  80% { transform: scaleY(1.25); }
+}
+/* the last pill carries the round head, so it breathes as a whole and less */
+@keyframes voice-head {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.08, 1.18); }
+  65% { transform: scale(0.94, 0.86); }
+}
+
+.voice.is-listening .voice-pill { animation: voice-pill 900ms cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.voice.is-listening .voice-pill:nth-child(1) { animation-duration: 760ms; animation-delay: -200ms; }
+.voice.is-listening .voice-pill:nth-child(2) { animation-duration: 880ms; animation-delay: -520ms; }
+.voice.is-listening .voice-pill:nth-child(3) { animation-duration: 1000ms; animation-delay: -80ms; }
+.voice.is-listening .voice-pill:nth-child(4) { animation-name: voice-head; animation-duration: 1100ms; animation-delay: -360ms; }
+.voice-pill.is-settled { animation: none !important; }
+
+/* Composer + voice button: shaded dark red while the keyboard is up, frosted glass once it folds */
+.composer {
+  /* the keyboard's backdrop colour (.bg-kbtint), solid; the field then wears the keyboard's own
+     material on top (below), so field, voice button and keyboard come out the exact same colour */
+  --field-bg: color-mix(in oklab, var(--theme) 60%, #000);
+  --field-border: rgba(255, 255, 255, 0.09);
+  --field-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 24px rgba(0, 0, 0, 0.2);
+  --field-blur: blur(24px) saturate(1.5);
+  --ink: #fff0ec;
+  --ink-placeholder: 0.72;
+}
+.phone[data-keyboard="closed"] .composer {
+  --field-bg: color-mix(in oklab, var(--me-c, rgb(150, 10, 14)) 22%, transparent);
+  --field-border: rgba(255, 255, 255, 0.07);
+  --field-shadow: inset 0 0 26px 1px rgba(255, 255, 255, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --field-blur: blur(20px) saturate(1.4) brightness(0.9);
+}
+.field,
+.voice-base,
+.voice::after {
+  transition: background 320ms var(--ease-out), box-shadow 320ms var(--ease-out), border-color 320ms var(--ease-out);
+}
+
+/* First card sits on the brightest part of the cloud: a little extra shade on its left keeps its text readable, easing off to the right */
+.vent-card:first-child {
+  background: linear-gradient(to right, rgba(130, 24, 0, 0.3) 0%, rgba(130, 24, 0, 0.14) 55%, rgba(130, 24, 0, 0) 100%), rgba(255, 255, 255, 0.14);
+}
+
+/* Third card dissolves toward the right edge, text included */
+.vent-card:nth-child(3) {
+  -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.85) 30%, transparent 78%);
+  mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.85) 30%, transparent 78%);
+}
+
+/* ───────────────────────── Page colour behind the keyboard ─────────────────────────
+   Edge glow, Haze and Bottom gradient: the agent's theme colour fills the space under the keys
+   (deepened so the keyboard stays legible), easing up past the keyboard's top edge. */
+
+.bg-kbtint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--kb-h) + 150px);
+  z-index: 0;
+  pointer-events: none;
+  --kb-tint: color-mix(in oklab, var(--theme) 60%, #000);
+  background: linear-gradient(
+    to top,
+    var(--kb-tint) 0,
+    var(--kb-tint) calc(var(--kb-h) - 20px),
+    color-mix(in oklab, var(--kb-tint) 55%, transparent) calc(var(--kb-h) + 30px),
+    transparent 100%
+  );
+  transition: transform var(--kb-dur) var(--ease-drawer);
+}
+.phone[data-keyboard="closed"] .bg-kbtint { transform: translateY(calc(100% + 2px)); }
+.phone[data-bg="vent"] .bg-kbtint { display: none; }
+
+/* ── Field + voice button wear the keyboard material while the keyboard is up ──
+   Same stack as .kb-material: +#0d0d0d (plus-lighter), then 38-grey luminosity at 90%. Blended inside
+   each element (isolated), over the solid --field-bg, they land on the keyboard's exact colour. */
+.field,
+.voice-base { isolation: isolate; }
+.field::before,
+.field::after,
+.voice-base::before,
+.voice-base::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 320ms var(--ease-out);
+}
+.field::before,
+.voice-base::before { background: #0d0d0d; mix-blend-mode: plus-lighter; }
+.field::after,
+.voice-base::after { background: rgba(38, 38, 38, 0.9); mix-blend-mode: luminosity; }
+.phone[data-keyboard="closed"] .field::before,
+.phone[data-keyboard="closed"] .field::after,
+.phone[data-keyboard="closed"] .voice-base::before,
+.phone[data-keyboard="closed"] .voice-base::after { opacity: 0; }
+
+/* Haze with the keyboard up: its colour band lives in the lower third, which the keyboard covers,
+   so the band rises with the keyboard to sit in the space above it; the keyboard's own tint stays
+   behind the keys only (no wash fading up over the haze) */
+.bg--haze .bg-layer { transition: opacity var(--color-dur) var(--color-ease), transform var(--kb-dur) var(--ease-drawer); }
+.phone[data-bg="haze"][data-keyboard="open"] .bg--haze .bg-layer { transform: translateY(calc(-1 * var(--kb-h) + 70px)); }
+/* the raised band's pale bottom edge would sit just above the keys as a light strip; the keyboard's
+   tint covers it solidly to the composer, then eases out so the haze colours above stay visible */
+.phone[data-bg="haze"] .bg-kbtint {
+  height: calc(var(--kb-h) + 190px);
+  background: linear-gradient(to top,
+    var(--kb-tint) 0,
+    var(--kb-tint) calc(var(--kb-h) + 30px),
+    color-mix(in oklab, var(--kb-tint) 72%, transparent) calc(var(--kb-h) + 70px),
+    color-mix(in oklab, var(--kb-tint) 38%, transparent) calc(var(--kb-h) + 115px),
+    color-mix(in oklab, var(--kb-tint) 12%, transparent) calc(var(--kb-h) + 160px),
+    transparent 100%);
+}
+/* with the keyboard up the haze's pale bottom glow is dialled down, so no light band sits above the keys */
+.phone[data-bg="haze"][data-keyboard="open"] .bg--haze .bg-layer { --haze-pk: 0.3; }
+
+/* "Ready to vent?" drawn in an effect name style: the SVG keeps its own bleed, centred */
+.vent-title.is-fx { display: grid; place-items: center; height: 27px; }
+.vent-title.is-fx svg { overflow: visible; }
+
+/* Home + Chat: the exploration panels stay hidden; only the stage switcher shows */
+.style-pickers[hidden], .seq-panel[hidden] { display: none !important; }
+.vent-title .vent-title-trail { opacity: 0.55; filter: brightness(0.72) saturate(1.1); }
+
+/* Home + Chat: everything lines up with the composer's 16px side margins */
+.pre-variant[data-v="5"] { padding-left: 16px; padding-right: 16px; }
+.vent-cards { margin: 0 -16px; padding: 0 16px; }
+#phone { --chat-pad: 16px; } /* recap.css sets it per chat style */
+
+/* ───────────── Lock-screen handoff ─────────────
+   lockscreen.html loads this page in an iframe (?hold). The foreground stays hidden until the
+   lock screen says "play", then everything blurs up in a stagger, as on a normal first screen. */
+html.lock-hold .memories, html.lock-hold .vent-title, html.lock-hold .vent-card, html.lock-hold .composer,
+html.lock-hold .keyboard, html.lock-hold .kb-material, html.lock-hold .ios-home { opacity: 0; }
+html.lock-hold .pre-variant.is-entering [style*="--i"] { animation: none; opacity: 0; }
+@keyframes lock-fade { from { opacity: 0; } }
+html.lock-play .memories { animation: pre-in 520ms var(--ease-out) both; }
+html.lock-play .composer { animation: pre-in 520ms var(--ease-out) 350ms both; }
+html.lock-play .keyboard { animation: pre-in 520ms var(--ease-out) 420ms both; }
+html.lock-play .kb-material, html.lock-play .ios-home { animation: lock-fade 520ms var(--ease-out) 420ms both; }
+@media (prefers-reduced-motion: reduce) {
+  html.lock-play .memories, html.lock-play .composer, html.lock-play .keyboard { animation: lock-fade 200ms ease both; }
+}
+
+/* Text effects bleed past their own box (glow, haze); clipping them there leaves a tinted rectangle */
+svg.name-effect { overflow: visible; }
+
+/* Voice button → call: the black wash (voice-transition.js). A circle with a feathered edge, sized by an
+   animatable length so it can grow smoothly; --wash-x/--wash-y centre it on the voice button. */
+@property --wash-r { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.vt-wash {
+  position: absolute; inset: 0; z-index: 2000; pointer-events: none; background: #050304;
+  -webkit-mask-image: radial-gradient(circle at var(--wash-x) var(--wash-y), #000 calc(var(--wash-r) - 100px), transparent var(--wash-r));
+  mask-image: radial-gradient(circle at var(--wash-x) var(--wash-y), #000 calc(var(--wash-r) - 100px), transparent var(--wash-r));
+}
+
+/* ───────────────────────── Memories tooltip (memory-tip.js) ─────────────────────────
+   "Memory saved", grown out of the Memories button's right side. Gold is the Memories glyph's own colour. */
+.memories-star { transform-box: fill-box; transform-origin: center; }
+.mt {
+  --mt-gold: #FFD693;
+  position: absolute; left: 80px; top: 82px; z-index: 60;
+  transform: translateY(-50%); transform-origin: left center;
+  pointer-events: none; white-space: nowrap; font-family: var(--font-ui);
+}
+.mt > * { position: relative; z-index: 1; }
+
+/* 1 · Glass glare: the agent bubbles' faint white glass, with the edge glare in the corner facing the button (text only) */
+.mt--glass {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 16px; overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16), inset 0 0.5px 0 rgba(255, 255, 255, 0.22), 0 6px 18px rgba(0, 0, 0, 0.25);
+  color: #fff; font-size: 14px; font-weight: 500; letter-spacing: -0.1px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.mt--glass::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(26px 20px at 0% 100%,
+    color-mix(in oklab, var(--mt-gold) 55%, transparent) 0%,
+    color-mix(in oklab, var(--mt-gold) 18%, transparent) 50%, transparent 100%);
+  box-shadow: inset 2px -2px 3px -1px color-mix(in oklab, var(--mt-gold) 70%, #fff), inset 5px -4px 8px -4px var(--mt-gold);
+  -webkit-mask-image: radial-gradient(42px 32px at 0% 100%, #000 0%, rgba(0, 0, 0, 0.7) 45%, transparent 100%);
+  mask-image: radial-gradient(42px 32px at 0% 100%, #000 0%, rgba(0, 0, 0, 0.7) 45%, transparent 100%);
+  opacity: 0.85;
+}
+
+/* 2 · Dark chip: the Memories button's own dark material, two lines, a gold dot and a faint gold edge */
+.mt--chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 15px 9px 12px; border-radius: 14px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 60%), #0c0c0c;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.08), inset 0 0.7px 0 rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.mt--chip::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(22px 30px at 0% 50%, color-mix(in oklab, var(--mt-gold) 28%, transparent) 0%, transparent 100%);
+  box-shadow: inset 1.5px 0 2px -1px color-mix(in oklab, var(--mt-gold) 60%, transparent);
+}
+.mt-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--mt-gold);
+  box-shadow: 0 0 0 3px rgba(255, 214, 147, 0.14), 0 0 10px rgba(255, 214, 147, 0.7); }
+.mt-lines { display: flex; flex-direction: column; gap: 1px; }
+.mt-lines b { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: -0.1px; }
+.mt-lines small { font-size: 11.5px; color: rgba(255, 255, 255, 0.5); }
+
+/* 3 · Vibe whisper: no box, the words in the Vibe effect, and a gold spark that drops into the button */
+.mt--whisper { display: flex; align-items: center; }
+.mt--whisper .name-effect { display: block; }
+.mt-spark { position: absolute; z-index: 61; width: 10px; height: 10px; fill: #FFD693; pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(255, 214, 147, 0.9)); }
+
+/* design panel: a full-width action under the wording choices */
+.style-picker .tip-show { margin-top: 4px; text-align: center; background: rgba(255, 214, 147, 0.12); color: #FFD693; }
+
+/* ───────────────────────── Growing input (input-grow.js) ─────────────────────────
+   The field grows upward with the text. --field-extra is how much taller than one line it is; the chat
+   and the starter area above lift by the same amount, on the same curve. */
+.phone { --field-extra: 0px; }
+.field { transition: height 220ms var(--ease-out), background 320ms var(--ease-out), box-shadow 320ms var(--ease-out), border-color 320ms var(--ease-out); }
+.pre { bottom: calc(var(--kb-h) + var(--composer-gap) + 52px + var(--field-extra) + 14px); transition: bottom var(--kb-dur) var(--ease-drawer); }
+.phone[data-keyboard="closed"] .pre { bottom: calc(var(--composer-rest) + 52px + var(--field-extra) + 18px); }
+@media (prefers-reduced-motion: reduce) { .field { transition-duration: 0ms, 320ms, 320ms, 320ms; } }
