@@ -724,7 +724,7 @@ p.disp{color:var(--t1)}
         <div class="ocard"><div class="ohd"><i class="oblob" aria-hidden="true"></i><span>{{o.md}}</span></div><p class="ot3">{{o.q1}} <em>{{o.q2}}</em></p><div class="osug"><b>Next time</b><span>{{o.sug}}</span></div></div>
       </section></sc-for></div></sc-if>
         <sc-if value="{{showGroups}}" hint-placeholder-val="{{false}}"><section class="fc grp" style="padding-top: 6px; padding-bottom: 6px">
-      <sc-for list="{{groups}}" as="g" hint-placeholder-count="4"><div class="trow"><span class="gbw" aria-hidden="true"><i class="gb" style="width: {{g.sz}}px; height: {{g.sz}}px; background: radial-gradient(circle at 35% 30%, {{g.cl}}, {{g.c}} 68%); box-shadow: 0 6px 16px -4px {{g.c}}"></i></span><span class="nm">{{g.t}}<small>{{g.sub}}</small></span><span class="dcount">{{g.days}}</span></div></sc-for>
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="4"><div class="trow"><span class="gbw" aria-hidden="true"><i class="gb" style="width: {{g.sz}}px; height: {{g.sz}}px; background: radial-gradient(circle at 35% 30%, {{g.cl}}, {{g.c}} 68%); box-shadow: 0 6px 16px -4px {{g.c}}"></i></span><span class="nm">{{g.t}}<small>{{g.sub}}</small></span></div></sc-for>
     </section></sc-if>
     <section class="fc fswap" style="display: {{fcD}}; opacity: {{fcO}}; transform: translateY({{fcY}}px); filter: blur({{fcB}}px); transition: {{fcT}}">
       <h3><span style="color: {{fTc}}; transition: color .3s">{{fTitle}}<span class="cnt">{{fCnt}}</span></span><span class="hm">{{fMeta}}</span></h3>
