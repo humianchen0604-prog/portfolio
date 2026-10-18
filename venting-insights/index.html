@@ -679,6 +679,14 @@ p.disp{color:var(--t1)}
 /* anger groups under the calendar */
 .grp .trow{cursor:default}
 .grp .dcount{flex:none;font-size:13px;color:var(--t3);white-space:nowrap}
+
+/* anger groups: blob markers, fill like empty calendar cells, no stroke */
+.fc.grp{background:#1b1a1d!important;box-shadow:none!important}
+.grp .gbw{flex:none;width:40px;height:40px;display:grid;place-items:center}
+.grp .gb{display:block;border-radius:62% 38% 45% 55% / 48% 62% 38% 52%}
+.grp .trow:nth-of-type(2) .gb{border-radius:40% 60% 58% 42% / 60% 42% 58% 40%}
+.grp .trow:nth-of-type(3) .gb{border-radius:55% 45% 36% 64% / 42% 56% 44% 58%}
+.grp .trow:nth-of-type(4) .gb{border-radius:48% 52% 62% 38% / 56% 44% 56% 44%}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
@@ -716,7 +724,7 @@ p.disp{color:var(--t1)}
         <div class="ocard"><div class="ohd"><i class="oblob" aria-hidden="true"></i><span>{{o.md}}</span></div><p class="ot3">{{o.q1}} <em>{{o.q2}}</em></p><div class="osug"><b>Next time</b><span>{{o.sug}}</span></div></div>
       </section></sc-for></div></sc-if>
         <sc-if value="{{showGroups}}" hint-placeholder-val="{{false}}"><section class="fc grp" style="padding-top: 6px; padding-bottom: 6px">
-      <sc-for list="{{groups}}" as="g" hint-placeholder-count="4"><div class="trow"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2.5" stroke-dasharray="3 3"></circle><circle cx="20" cy="20" r="16" fill="none" stroke="{{g.c}}" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="{{g.dash}} 101" transform="rotate(-90 20 20)"></circle><ellipse cx="20" cy="20" rx="5.5" ry="5" fill="{{g.c}}" opacity=".9"></ellipse></svg><span class="nm">{{g.t}}<small>{{g.sub}}</small></span><span class="dcount">{{g.days}}</span></div></sc-for>
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="4"><div class="trow"><span class="gbw" aria-hidden="true"><i class="gb" style="width: {{g.sz}}px; height: {{g.sz}}px; background: radial-gradient(circle at 35% 30%, {{g.cl}}, {{g.c}} 68%); box-shadow: 0 6px 16px -4px {{g.c}}"></i></span><span class="nm">{{g.t}}<small>{{g.sub}}</small></span><span class="dcount">{{g.days}}</span></div></sc-for>
     </section></sc-if>
     <section class="fc fswap" style="display: {{fcD}}; opacity: {{fcO}}; transform: translateY({{fcY}}px); filter: blur({{fcB}}px); transition: {{fcT}}">
       <h3><span style="color: {{fTc}}; transition: color .3s">{{fTitle}}<span class="cnt">{{fCnt}}</span></span><span class="hm">{{fMeta}}</span></h3>
@@ -1015,7 +1023,7 @@ class Component extends DCLogic {
       isBlob: isBlob, isCal: !isBlob, ...(() => { const tb = (st.tab || st.view) === 'blob', A1 = 104, A2 = 110, I = 42; return { tabBlob: tb, tabCal: !tb, bw1: tb ? A1 : I, bw2: tb ? I : A2, indX: tb ? 0 : I + 2, indW: tb ? A1 : A2 }; })(), toBlob: () => this.swap('blob'), innerO: st.fading ? 0 : 1, showDayEv: !isBlob && st.day != null, lgO: !isBlob && st.day != null ? 1 : 0, lgY: !isBlob && st.day != null ? 0 : 6, lgDots: (st.day != null && HEAT[st.day] ? HEAT[st.day] : []).map(v => ({ x: ((95 - Math.max(15, Math.min(95, v))) / 80 * 100).toFixed(1), c: rgb(hrgb(v)) })), dayEv: (!isBlob && st.day != null ? (DAYS[st.day] || []) : []).map((e, ei) => { const t = TH[e[0]], open = OPEN[e[0]] && OPEN[e[0]].dn === st.day && !(st.gone || {})[e[0]]; return { c: rgb(t.c), tc: rgb(mix(t.c, WHITE, .25)), topic: t.name, state: open ? 'still open' : 'settled', sc: open ? rgb(mix(t.c, WHITE, .45)) : 'rgba(236,232,242,.45)', sbg: open ? rgb(t.c, .18) : 'rgba(255,255,255,.06)', what: (CTX[st.day] || [])[ei] || e[1], helped: e[3], ins: e[4], coped: e[2].map((x, i) => i ? x.charAt(0).toLowerCase() + x.slice(1) : x).join(', ') + '.' }; }), showCalOpen: false, showGroups: !isBlob && st.day == null, groups: (() => {
         const GR = [{ t: 'Still angry', min: 70, sub: 'Pause first, then pick one small step.', h: 85 }, { t: 'Simmering', min: 50, sub: 'Write it down tonight, send nothing yet.', h: 60 }, { t: 'Cooling down', min: 30, sub: 'A good time to say it clearly, once.', h: 40 }, { t: 'Calm now', min: 0, sub: 'Note what helped, so you can reuse it.', h: 20 }];
         const peak = d => Math.max.apply(null, HEAT[d]), all = Object.keys(HEAT);
-        return GR.map((g, i) => { const hi = i ? GR[i - 1].min : 101, n = all.filter(d => peak(d) >= g.min && peak(d) < hi).length; return { t: g.t, sub: g.sub, c: rgb(hrgb(g.h)), dash: (n / all.length * 101).toFixed(1), days: n + (n === 1 ? ' day' : ' days') }; });
+        return GR.map((g, i) => { const hi = i ? GR[i - 1].min : 101, n = all.filter(d => peak(d) >= g.min && peak(d) < hi).length; return { t: g.t, sub: g.sub, c: rgb(hrgb(g.h)), cl: rgb(mix(hrgb(g.h), WHITE, .5)), sz: 16 + n * 5, days: n + (n === 1 ? ' day' : ' days') }; });
       })(), calOpen: Object.keys(OPEN).filter(k => k !== 'pkg' && k !== 'home').sort((x, y) => OPEN[y].dn - OPEN[x].dn).map(k => { const n = 16 - OPEN[k].dn, tk = OPEN[k].tk || k; return { k: tk, cls: 'open2 k-' + tk + ((st.gone || {})[k] ? ' gone' : ''), c: rgb(hrgb(OPEN[k].h)), md: OPEN[k].d.replace('Oct ', '10.'), topic: TH[tk].name, q: OPEN[k].q, sug: OPEN[k].sug, q1: OPEN[k].q1, q2: OPEN[k].q2, date: OPEN[k].wd + ' ' + OPEN[k].d + ', 2026', ago: n <= 0 ? 'Today' : n === 1 ? 'Yesterday' : n + ' days ago', go: e => this.dissolve(k, e) }; }), fcD: !isBlob && st.day == null ? 'none' : 'block', innerTop: isBlob ? 588 : st.day != null ? 524 : 488, toCal: () => this.swap('cal'), clearDay: () => this.setState({ day: null }),
       blobO: isBlob ? 1 : 0, blobPE: isBlob ? 'auto' : 'none', calO: isBlob ? 0 : 1, calPE: isBlob ? 'none' : 'auto',
       labs: THEMES.map((t, i) => ({ id: 'bl' + i, t: t.name, p: Math.round(t.n / TOTAL * 100) + '%', o: sel == null || i === sel ? 1 : (MODE === 'bonds' && linked(th.k, t.k) ? .85 : .45) })),
