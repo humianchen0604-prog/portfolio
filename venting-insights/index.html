@@ -649,6 +649,14 @@ p.disp{color:var(--t1)}
 .osug{margin:0 0 12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
 .osug b{display:block;margin-bottom:3px;font-size:11.5px;font-weight:500;letter-spacing:.02em;color:color-mix(in srgb,var(--oc) 40%,#fff)}
 .osug span{display:block;font-size:14px;line-height:1.38;color:rgba(255,255,255,.88)}
+
+/* irregular colour blobs instead of dots */
+.mk{border-radius:62% 38% 45% 55% / 48% 62% 38% 52%!important}
+.ins:nth-of-type(2n) .mk,.di:nth-child(2n) .mk{border-radius:40% 60% 58% 42% / 60% 42% 58% 40%!important}
+.ins:nth-of-type(3n) .mk{border-radius:55% 45% 36% 64% / 42% 56% 44% 58%!important}
+.mk{width:10px;height:9px}.ins .m .mk{width:8px!important;height:7px!important}
+.ds .dots i{border-radius:62% 38% 45% 55% / 48% 62% 38% 52%!important}
+.ocard .ot3{font-size:15px!important}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
@@ -683,7 +691,7 @@ p.disp{color:var(--t1)}
         <svg class="ograin" aria-hidden="true" width="100%" height="100%"><filter id="og2"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"></feTurbulence></filter><rect width="100%" height="100%" filter="url(#og2)"></rect></svg>
         <i class="ofade" aria-hidden="true"></i><i class="oic" aria-hidden="true"></i>
         
-        <div class="ocard"><i class="oic" aria-hidden="true"></i><p class="ot3">{{o.q1}}<em>{{o.q2}}</em></p><p class="owhen2">{{o.ago}}</p><div class="osug"><b>Suggested next step</b><span>{{o.sug}}</span></div><div class="obtns"><button type="button" class="ob2b">Chat to update</button></div></div>
+        <div class="ocard"><i class="oic" aria-hidden="true"></i><p class="ot3">{{o.q1}}<em>{{o.q2}}</em></p><p class="owhen2">{{o.ago}}</p><div class="osug"><b>Suggested next step</b><span>{{o.sug}}</span></div></div>
       </section></sc-for></div></sc-if>
         <section class="fc fswap" style="display: {{fcD}}; opacity: {{fcO}}; transform: translateY({{fcY}}px); filter: blur({{fcB}}px); transition: {{fcT}}">
       <h3><span style="color: {{fTc}}; transition: color .3s">{{fTitle}}<span class="cnt">{{fCnt}}</span></span><span class="hm">{{fMeta}}</span></h3>
@@ -961,7 +969,7 @@ class Component extends DCLogic {
         const di = st.dLast, dt = THEMES[di], DTd = DETAIL[dt.k];
         const detail = {
           dHidden: st.detail == null, dTf: st.detail != null ? 'none' : 'translateY(105%)', dScO: st.detail != null ? 1 : 0, dScPE: st.detail != null ? 'auto' : 'none', closeD: () => this.setState({ detail: null }), dFadeO: st.dScr ? 1 : 0,
-          dName: dt.name, dSub: dt.n + (dt.n === 1 ? ' talk' : ' talks') + ' in October', dStatus: done[dt.k] === dt.n ? 'All settled' : done[dt.k] ? done[dt.k] + ' of ' + dt.n + ' settled' : 'Still warm',
+          dName: dt.name, dSub: dt.n + (dt.n === 1 ? ' talk' : ' talks') + ' in October', dStatus: done[dt.k] === dt.n ? 'All settled' : done[dt.k] ? done[dt.k] + ' of ' + dt.n + ' settled' : 'In progress',
           dLearned: DTd.learned, dUpN: DTd.up.length + (DTd.up.length === 1 ? ' moment' : ' moments'),
           dUp: DTd.up.map(x => { const p = x.split(' · '); return { t: p[1], d: p[0] }; }),
           dCopes: COPES[dt.k].map(c => ({ t: c[0], n: '×' + c[1], d: c[1] + (c[1] === 1 ? ' time' : ' times') })), dTalks: dt.n, dSettled: done[dt.k], dReflect: dt.reflect, dSpan: (() => { const ds = INS[dt.k].map(x => x[1]).concat(DTd.up.map(x => +x.split(' · ')[0].replace('Oct ', ''))); return Math.max(1, Math.max(...ds) - Math.min(...ds)); })(), dCopedNote: DTd.coped,
@@ -975,7 +983,7 @@ class Component extends DCLogic {
           feed: items, fc: !isBlob ? '#FFFFFF' : fs == null ? '#FFFFFF' : rgb(fth.c),
           showSum: (isBlob && fs == null) || (!isBlob && st.day == null), fTitle: !isBlob ? (st.day != null ? 'October ' + st.day : 'This month') : fs == null ? 'This month' : fth.name, fMeta: !isBlob ? (st.day != null ? '' : 'October') : fs == null ? 'October' : '', fCnt: isBlob && fs != null ? '(' + fth.n + ')' : '', fTc: isBlob && fs != null ? rgb(mix(fth.c, WHITE, .15)) : 'rgba(236,232,242,.92)', fcO: st.fFade ? 0 : 1, fcY: st.fFade ? 6 : 0, fcB: st.fFade ? 10 : 0, fcT: st.fFade ? 'opacity .2s ease-in, filter .2s ease-in, transform .2s ease-in' : 'opacity .42s ease-out, filter .55s cubic-bezier(.2,.8,.2,1), transform .55s cubic-bezier(.2,.8,.2,1)',
           showVa: !(!isBlob && st.day != null), vaLabel: fs != null && isBlob ? 'See analysis' : st.all ? 'Show less' : 'Show all', showAll: () => this.setState(fs != null && isBlob ? { detail: fs, dLast: fs } : { all: !st.all }), _old: () => this.setState({ fs: null, view: 'blob', all: true }),
-          rows: THEMES.map((t, i) => ({ t: t.name, n: t.n, c: rgb(t.c), on: false, dash: (done[t.k] / t.n * 100).toFixed(1), sub: done[t.k] === t.n ? 'Settled' : done[t.k] ? done[t.k] + ' of ' + t.n + ' settled' : 'Still warm', pick: () => this.setState({ detail: i, dLast: i }) }))
+          rows: THEMES.map((t, i) => ({ t: t.name, n: t.n, c: rgb(t.c), on: false, dash: (done[t.k] / t.n * 100).toFixed(1), sub: done[t.k] === t.n ? 'Settled' : done[t.k] ? done[t.k] + ' of ' + t.n + ' settled' : 'In progress', pick: () => this.setState({ detail: i, dLast: i }) }))
         });
       })(),
       close: () => this.setState({ open: null }), scO: st.open != null ? 1 : 0, scPE: st.open != null ? 'auto' : 'none', shTf: st.open != null ? 'none' : 'translateY(110%)',
