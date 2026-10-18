@@ -633,6 +633,15 @@ p.disp{color:var(--t1)}
 .ot3 em{display:block;font-style:italic;color:color-mix(in srgb,var(--oc) 55%,#fff)}
 .oglyph{position:absolute;right:22px;bottom:20px;width:60px;height:60px;background:linear-gradient(180deg,color-mix(in srgb,var(--oc) 45%,#fff) 0%,var(--oc) 100%);-webkit-mask:var(--ico) center/60px 60px no-repeat;mask:var(--ico) center/60px 60px no-repeat}
 .ocal .obtns{margin-top:10px;padding:0}
+
+/* calendar card v3: glass icon top-left, Geist title, ago under title, buttons inside */
+.ocard{height:auto!important;display:flex;flex-direction:column;padding:16px!important}
+.ocard .oic{position:relative;left:auto;top:auto;flex:none;width:44px;height:44px;margin-bottom:34px}
+.ocard .ot3{position:static!important;margin:0!important;padding:0 6px;font-family:'Geist',-apple-system,sans-serif!important;font-style:normal!important;font-weight:500!important;font-size:19px!important;line-height:1.28!important;letter-spacing:-.01em!important}
+.ocard .ot3 em{font-style:normal!important;color:color-mix(in srgb,var(--oc) 40%,#fff)!important}
+.ocard .owhen2{margin:6px 0 16px;padding:0 6px;font-size:13px;color:rgba(255,255,255,.6)}
+.ocard .obtns{margin:0!important}
+.ocard .obtns button{height:42px!important}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
@@ -667,7 +676,7 @@ p.disp{color:var(--t1)}
         <svg class="ograin" aria-hidden="true" width="100%" height="100%"><filter id="og2"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"></feTurbulence></filter><rect width="100%" height="100%" filter="url(#og2)"></rect></svg>
         <i class="ofade" aria-hidden="true"></i><i class="oic" aria-hidden="true"></i>
         
-        <div class="ocard"><p class="odt">{{o.date}}<br>{{o.ago}}</p><p class="ot3">{{o.q1}}<em>{{o.q2}}</em></p><i class="oglyph" aria-hidden="true"></i></div><div class="obtns"><button type="button" class="ob1b" onClick="{{o.go}}">Let it go</button><button type="button" class="ob2b">Chat to update</button></div>
+        <div class="ocard"><i class="oic" aria-hidden="true"></i><p class="ot3">{{o.q1}}<em>{{o.q2}}</em></p><p class="owhen2">{{o.ago}}</p><div class="obtns"><button type="button" class="ob1b" onClick="{{o.go}}">Let it go</button><button type="button" class="ob2b">Chat to update</button></div></div>
       </section></sc-for></div></sc-if>
         <section class="fc fswap" style="display: {{fcD}}; opacity: {{fcO}}; transform: translateY({{fcY}}px); filter: blur({{fcB}}px); transition: {{fcT}}">
       <h3><span style="color: {{fTc}}; transition: color .3s">{{fTitle}}<span class="cnt">{{fCnt}}</span></span><span class="hm">{{fMeta}}</span></h3>
