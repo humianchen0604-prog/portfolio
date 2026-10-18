@@ -644,7 +644,7 @@ p.disp{color:var(--t1)}
       </section></sc-for></div></sc-if>
         <section class="fc fswap" style="display: {{fcD}}; opacity: {{fcO}}; transform: translateY({{fcY}}px); filter: blur({{fcB}}px); transition: {{fcT}}">
       <h3><span style="color: {{fTc}}; transition: color .3s">{{fTitle}}<span class="cnt">{{fCnt}}</span></span><span class="hm">{{fMeta}}</span></h3>
-      <sc-if value="{{showSum}}" hint-placeholder-val="{{true}}"><p class="ult">You brought five things here. Most of them settled within a week. Work and money took the longest.</p></sc-if>
+      <sc-if value="{{showSum}}" hint-placeholder-val="{{true}}"><p class="ult">You brought five things here. Most of them settled within a week. Work and love took the longest.</p></sc-if>
       <sc-for list="{{feed}}" as="x" hint-placeholder-count="3"><div class="ins"><sc-if value="{{x.hasTopic}}" hint-placeholder-val="{{true}}"><p class="m"><i class="mk" style="--mc: {{x.c}}"></i><span>{{x.topic}}</span></p></sc-if><span class="d"><sc-if value="{{x.rtag}}" hint-placeholder-val="{{false}}"><i class="mk rt" style="--mc: {{x.c}}"></i></sc-if>{{x.date}}</span><p class="t">{{x.t}}</p></div></sc-for>
       <sc-if value="{{showDayEv}}" hint-placeholder-val="{{false}}"><sc-for list="{{dayEv}}" as="e" hint-placeholder-count="1"><div class="dev">
         <p class="devh" style="--ec: {{e.c}}"><span class="devtp">{{e.topic}}</span> · {{e.state}}</p>
@@ -698,26 +698,26 @@ p.disp{color:var(--t1)}
 const MODE = 'bonds', CAL = 'liquid', INIT = {};
 
 const THEMES = [
-  { k: 'work', name: 'Work', c: [88, 140, 255], n: 5, feel: 'unseen', reflect: 'Feeling unseen is what stings.', up: 'Slides taken, a curt rejection', coped: 'Said what stung, then applied elsewhere', helped: 'Listened first, then asked what you wanted' },
-  { k: 'home', name: 'Home', c: [255, 158, 84], n: 1, feel: 'ignored', reflect: 'One fair ask, said once.', up: 'Dishes left in the sink again', coped: 'Planned one clear ask', helped: 'Helped you phrase the ask' },
-  { k: 'friends', name: 'Friends', c: [255, 120, 180], n: 2, feel: 'left out', reflect: 'Silence feels louder late at night.', up: 'A quiet group chat, a distant friend', coped: 'Waited till morning, then texted Jess', helped: 'Separated the late hour from the friendship' },
-  { k: 'money', name: 'Money', c: [84, 206, 150], n: 5, feel: 'cheated', reflect: 'Anger with a plan cools down.', up: 'The deposit he kept', coped: 'Found photos, sent a letter', helped: 'One next step at a time' },
-  { k: 'self', name: 'Self', c: [170, 140, 255], n: 1, feel: 'worn out', reflect: 'Some nights you need rest, not a plan.', up: 'Calling yourself useless after a long day', coped: 'Went to bed early', helped: 'Just listened' }
+  { k: 'work', name: 'Work', c: [88, 140, 255], n: 5, feel: 'overloaded', reflect: 'Too much work and moving deadlines is what wears you down.', up: 'Extra projects, deadlines that keep moving', coped: 'Asked your boss for a priority list', helped: 'Helped you ask for clarity instead of absorbing it' },
+  { k: 'home', name: 'Home', c: [255, 158, 84], n: 1, feel: 'on edge', reflect: 'One fair ask, said once.', up: 'Roommate running the dryer at 1am', coped: 'Planned one calm message', helped: 'Helped you word the ask without the edge' },
+  { k: 'friends', name: 'Team', c: [84, 206, 150], n: 2, feel: 'carrying it', reflect: 'Doing someone else’s share adds up quietly.', up: 'A teammate who skips their part', coped: 'Asked for a clear split', helped: 'Helped you name what you needed' },
+  { k: 'money', name: 'Love', c: [255, 120, 180], n: 5, feel: 'betrayed', reflect: 'Hurt first, then one step at a time.', up: 'Finding out he cheated', coped: 'Blocked him, told someone you trust', helped: 'Listened first, then one next step' },
+  { k: 'self', name: 'Self', c: [170, 140, 255], n: 1, feel: 'worn out', reflect: 'Some nights you need rest, not a plan.', up: 'Blaming yourself for not seeing it', coped: 'Went to bed early', helped: 'Just listened' }
 ];
 const DAYS = {
-  1: [['work', 'Your manager presented your slides as her own.', ['Said what stung'], 'Listened first, then asked what you wanted her to know.', 'It wasn’t about the slides. It was about not being seen.']],
-  2: [['work', 'She thanked you by name in a follow-up email.', ['Let it go'], 'Pointed out the credit was now in writing.', 'A late thank-you still counts.']],
-  3: [['money', 'Your landlord kept your whole deposit.', ['Waited a night'], 'Suggested writing the angry version first, just for you.', 'Waiting a night kept your best argument intact.']],
-  5: [['money', 'Your landlord stopped answering.', ['Called it what it was'], 'Agreed his silence was a choice.', 'Being ignored hurt more than the money.']],
-  7: [['self', 'You called yourself useless after a long day.', ['Went to bed early'], 'Just listened, and didn’t try to fix it.', 'That night you needed rest, not a plan.']],
-  8: [['money', 'You found your move-in photos.', ['Gathered proof'], 'Helped you list what to include.', 'Having proof calmed you more than venting.']],
-  9: [['friends', 'Nobody replied to your birthday plan.', ['Put the phone down till morning'], 'Pointed out it was late and people were probably asleep.', 'Late at night, silence feels bigger than it is.']],
-  10: [['friends', 'Two friends said yes. Jess stayed quiet.', ['Texted Jess directly'], 'Helped you write a message that didn’t sound like an accusation.', 'One direct message beat waiting on the group.']],
-  11: [['money', 'You sent your landlord a formal letter.', ['Sent the letter'], 'Asked how it felt to finally hit send.', 'Doing the hard thing settled you.']],
-  12: [['work', 'Rejected in two lines after three interview rounds.', ['Vented', 'Wrote a reply you didn’t send'], 'Agreed it was a careless way to say no.', 'Effort that goes unacknowledged gets to you most.']],
-  14: [['work', 'You reread the rejection, looking for a reason.', ['Asked yourself what hurt most'], 'Asked which part hurt more: the no, or how they said it.', 'How they said no hurt more than the no.']],
-  15: [['money', 'Half the deposit came back.', ['Filed a claim for the rest'], 'Pointed out you had your evenings back.', 'Half back can still feel like a win.']],
-  16: [['work', 'You applied for a new role.', ['Applied elsewhere'], 'Noticed you were already moving on.', 'You were calmer about work than you thought.'], ['home', 'The dishes were left in the sink again.', ['Planned what to say'], 'Helped you phrase the ask without sounding bitter.', 'What you want is small and fair: dishes done the same day.'], ['home', 'Your package was marked delivered, then vanished from the lobby.', ['Emailed the building'], 'Found the office and drafted a note asking for the camera footage.', 'Third time this month is a pattern, not bad luck.']]
+  1: [['work', 'Your boss piled another project on top of your plate.', ['Said it was too much'], 'Listened first, then asked what could actually wait.', 'It wasn’t one project. It was never getting a clear no.']],
+  2: [['work', 'The deadline moved up again, with an apology.', ['Asked for the new date in writing'], 'Pointed out an apology doesn’t move the date back.', 'Getting it in writing gave you something to hold onto.']],
+  3: [['money', 'You found out your boyfriend cheated.', ['Waited a night'], 'Suggested writing the angry version first, just for you.', 'Waiting a night kept you from saying things you couldn’t take back.']],
+  5: [['money', 'He said sorry, then said it wasn’t that serious.', ['Called it what it was'], 'Agreed an apology that shrinks it isn’t an apology.', 'Being told it was small hurt more than the secret.']],
+  7: [['self', 'You told yourself you should have seen it coming.', ['Went to bed early'], 'Just listened, and didn’t try to fix it.', 'That night you needed rest, not a plan.']],
+  8: [['money', 'You blocked his number.', ['Blocked him'], 'Asked what you wanted your phone to feel like again.', 'Blocking him gave you your mornings back.']],
+  9: [['friends', 'Your teammate skipped the sync and left you the slides.', ['Vented first'], 'Pointed out it was the second time in two weeks.', 'Doing their part quietly was costing you more than the work.']],
+  10: [['friends', 'You asked your teammate directly for their half.', ['Asked for a clear split'], 'Helped you write a message that didn’t sound like an accusation.', 'One direct ask beat hoping they’d notice.']],
+  11: [['money', 'You told your best friend everything.', ['Told a friend'], 'Asked how it felt to finally say it out loud.', 'Saying it to someone who loves you made it smaller.']],
+  12: [['work', 'The deadline moved overnight, for the third time this week.', ['Vented', 'Drafted a message you didn’t send'], 'Agreed that three changes in a week isn’t planning.', 'Not knowing what’s due is what gets to you most.']],
+  14: [['work', 'You stayed until 10pm to hit the new date.', ['Asked yourself what could wait'], 'Asked which part was truly yours to carry tonight.', 'Doing it all by tonight was your choice, not the job’s.']],
+  15: [['money', 'You slept through the night without checking his Instagram.', ['Put the phone down'], 'Pointed out it was your first full night.', 'One quiet night can still feel like a win.']],
+  16: [['work', 'You asked your boss for a priority list.', ['Asked for clarity'], 'Helped you ask without sounding like you were complaining.', 'Asking for one clear priority felt better than absorbing everything.'], ['home', 'Your roommate ran the dryer at 1am again.', ['Planned what to say'], 'Helped you phrase the ask without sounding bitter.', 'What you want is small and fair: no loud dryer after 11.'], ['home', 'Your package was marked delivered, then vanished from the lobby.', ['Emailed the building'], 'Found the office and drafted a note asking for the camera footage.', 'Third time this month is a pattern, not bad luck.']]
 };
 
 const MINS = { 1: 2, 2: 1, 3: 6, 5: 4, 7: 2, 8: 3, 9: 2, 10: 1, 11: 2, 12: 4, 14: 3, 15: 1, 16: 3 };
@@ -740,45 +740,45 @@ const HEAT = { 1: [48], 2: [30], 3: [90], 5: [78], 7: [35], 8: [55], 9: [55], 10
 const MWD = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
 const DETAIL = {
-  work: { learned: 'Across five talks, the hardest moments were when your effort went unnoticed: the slides, the case study. You felt better each time you said plainly what you wanted.', up: ['Oct 1 · Your manager presented your slides as her own', 'Oct 12 · Rejected in two lines after three rounds', 'Oct 16 · You applied for a new role'], coped: 'Saying what stung helped in three of five talks. Writing the reply you wished you could send helped too, as long as you didn’t send it.', helped: 'It agreed it was unfair first, then asked what you actually wanted. Your next talk was half as long.' },
-  home: { learned: 'This one is still open. What you want is small and fair, dishes done the same day, and saying it once, clearly, is the whole plan.', up: ['Oct 16 · Dishes in the sink, third time this week'], coped: 'You turned the frustration into one clear ask for Sunday’s flat meeting.', helped: 'It helped you find the words without the edge.' },
-  friends: { learned: 'The quiet group chat felt like rejection at midnight. By morning two friends had said yes. The real issue is Jess, and that one is still open.', up: ['Oct 9 · Nobody replied to your birthday plan', 'Oct 10 · Two said yes, Jess stayed quiet'], coped: 'You waited until morning, then texted Jess directly instead of the group.', helped: 'It pointed out the late hour was doing a lot of the talking.' },
-  money: { learned: 'Your anger turned useful once it had a plan: photos, a letter, a claim. Half the money came back, and so did your evenings.', up: ['Oct 3 · Your landlord kept the deposit', 'Oct 8 · You found the move-in photos', 'Oct 15 · Half of it came back'], coped: 'You didn’t send the angry email. You gathered proof and sent a formal letter instead.', helped: 'It kept you on one next step at a time, not the whole fight at once.' },
-  self: { learned: 'After a long day, you were harder on yourself than on anyone else. What helped wasn’t advice, just being heard and getting some sleep.', up: ['Oct 7 · You called yourself useless after a long day'], coped: 'You went to bed early instead of replaying the day.', helped: 'It just listened, and didn’t try to fix anything.' }
+  work: { learned: 'Across five talks, the hardest moments were when the ground kept moving: more work, then a new deadline. You felt better each time you asked for one clear priority.', up: ['Oct 1 · Your boss piled on another project', 'Oct 12 · The deadline moved overnight, third time this week', 'Oct 16 · You asked for a priority list'], coped: 'Asking for dates in writing helped in three of five talks. Drafting the message you wished you could send helped too, as long as you didn’t send it.', helped: 'It agreed it was unfair first, then asked what could wait. Your next talk was half as long.' },
+  home: { learned: 'This one is still open. What you want is small and fair, no loud dryer after 11, and saying it once, clearly, is the whole plan.', up: ['Oct 16 · Dryer running at 1am, loud, again'], coped: 'You turned the frustration into one calm ask for tomorrow morning.', helped: 'It helped you find the words without the edge.' },
+  friends: { learned: 'Your teammate’s missing work kept landing on you. Once you asked directly for their half, the resentment had somewhere to go. Whether they follow through is still open.', up: ['Oct 9 · Your teammate skipped the sync', 'Oct 10 · You asked them for their half'], coped: 'You asked for a clear split instead of quietly covering again.', helped: 'It pointed out you’d already done their part twice.' },
+  money: { learned: 'The hurt got easier to carry once you stopped carrying it alone: a blocked number, a friend who knew, a quiet night. You didn’t do anything wrong here.', up: ['Oct 3 · You found out he cheated', 'Oct 8 · You blocked his number', 'Oct 15 · You slept through the night'], coped: 'You didn’t send the angry messages. You blocked him and told your best friend instead.', helped: 'It kept you on one next step at a time, not the whole breakup at once.' },
+  self: { learned: 'After the news, you were harder on yourself than on him. What helped wasn’t advice, just being heard and getting some sleep.', up: ['Oct 7 · You told yourself you should have seen it coming'], coped: 'You went to bed early instead of replaying it.', helped: 'It just listened, and didn’t try to fix anything.' }
 };
 const SERIES = { work: [48, 30, 88, 61, 27], home: [74], friends: [55, 18], money: [90, 78, 55, 40, 22], self: [35] };
 const SETTLED = { work: true, home: false, friends: false, money: true, self: false };
-const COPES = { work: [['Named it', 3], ['Wrote it out', 2], ['Applied elsewhere', 1]], home: [['Named the ask', 1]], friends: [['Waited till morning', 1], ['Messaged one friend', 1]], money: [['Gathered proof', 2], ['Sent a letter', 1], ['Waited a night', 1]], self: [['Rested', 1]] };
-const QUOTE = { work: '“After three rounds, two lines isn’t an answer.”', home: '“Third time this week isn’t forgetting.”', friends: '“It’s midnight. Nobody’s reading the group chat right now.”', money: '“It’s your money. You’re allowed to ask for it back.”', self: '“You fixed someone else’s mistake. That’s not useless.”' };
+const COPES = { work: [['Asked for clarity', 2], ['Named it', 2], ['Vented first', 1]], home: [['Named the ask', 1]], friends: [['Asked for a split', 1], ['Vented first', 1]], money: [['Blocked him', 1], ['Told a friend', 2], ['Waited it out', 2]], self: [['Rested', 1]] };
+const QUOTE = { work: '“Three deadline changes in a week isn’t planning.”', home: '“It’s 1am. The dryer can wait.”', friends: '“I shouldn’t have to do your part too.”', money: '“You didn’t do this. He did.”', self: '“You trusted him. That’s not stupid.”' };
 const spark = hs => { const n = hs.length, X = j => n === 1 ? 130 : 6 + j / (n - 1) * 248, Y = h => 36 - (h - 15) / 80 * 32; const pts = hs.map((h, j) => [X(j), Y(h)]); if (n === 1) pts.unshift([6, Y(hs[0])]); return { d: pts.map((p, j) => (j ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' '), ex: pts[pts.length - 1][0].toFixed(1), ey: pts[pts.length - 1][1].toFixed(1) }; };
 const INS = {
-  work: [['Feeling unseen is your trigger. The slides and the rejection hurt for the same reason.', 12], ['You calmed down faster once you said out loud what you wanted.', 14], ['You were already moving on before you said so.', 16]],
-  home: [['What you want is small and fair: dishes done the same day.', 16]],
-  friends: [['Late at night, silence felt like rejection. In the morning it was just a delay.', 10], ['Texting one person directly worked better than waiting on the group.', 10]],
-  money: [['Your anger got useful once it had a plan.', 8], ['Not sending the angry email kept your best argument intact.', 3], ['Getting half back was enough to give you your evenings back.', 15]],
+  work: [['Not knowing what’s due is your trigger. The extra work and the moving deadlines hurt for the same reason.', 12], ['You calmed down faster once you asked for one clear priority.', 14], ['You were already doing the right thing before you said so.', 16]],
+  home: [['What you want is small and fair: no loud dryer after 11.', 16]],
+  friends: [['Quietly covering for them cost you more than the work itself.', 9], ['Asking directly worked better than hoping they’d notice.', 10]],
+  money: [['Your anger got useful once it had a plan.', 8], ['Not sending the angry message kept your dignity intact.', 3], ['One quiet night was enough to remind you what calm feels like.', 15]],
   self: [['Some nights you need to be heard, not helped.', 7]]
 };
-const UPS = { work: 'Your manager presented your slides as her own. A week later, a company you interviewed with turned you down in two lines.', home: 'Your flatmate left the dishes in the sink for the third time this week.', friends: 'Nobody replied to your birthday plan in the group chat. Two said yes the next morning, but Jess still hasn’t.', money: 'Your landlord kept your deposit for a stain that was already there, then stopped answering.', self: 'You stayed late fixing someone else’s mistake, then spent the walk home calling yourself useless.' };
+const UPS = { work: 'Your boss piled another project on you, then kept moving the deadline, including once overnight.', home: 'Your roommate ran the dryer at 1am, loud enough to wake you, for the second time this week.', friends: 'Your teammate skipped the sync and left you the slides. When you asked for their half, they hadn’t answered yet.', money: 'You found out your boyfriend cheated, and he told you it wasn’t that serious.', self: 'You spent the night telling yourself you should have seen it coming.' };
 const CTX = {
-  1: ['In Monday’s team review, your manager walked through the slides you spent the weekend on and never mentioned your name. You said exactly what stung before deciding what to tell her.'],
-  2: ['The next day she sent a follow-up email to the team and thanked you by name. You decided that was enough and let it go.'],
-  3: ['Your landlord kept your whole deposit, blaming you for a wall stain that was there when you moved in. You wanted to send an angry email, and waited a night instead.'],
-  5: ['Your landlord stopped answering your calls and texts. You called it what it was: being ignored.'],
-  7: ['You stayed late fixing a mistake that wasn’t yours, then spent the walk home calling yourself useless. You went to bed early instead of replaying it.'],
-  8: ['You found the photos you took on move-in day, and the stain is right there. You started a folder of proof.'],
-  9: ['You suggested a birthday dinner in the group chat. Everyone saw it and nobody replied, and by midnight you were wondering if they’d all drifted away.'],
-  10: ['Two friends replied in the morning and said yes. Jess still hasn’t, and things have felt off since she skipped your last two plans. You texted her directly.'],
-  11: ['You sent your landlord a formal letter asking for the deposit back by the end of the month.'],
-  12: ['After three interview rounds and a weekend on the case study, the company turned you down in a two-line email from a no-reply address. You vented, then wrote the reply you wished you could send.'],
-  14: ['You reread the rejection twice, looking for a reason. There wasn’t one, and you noticed how they said no hurt more than the no.'],
-  15: ['Half the deposit came back. You filed a claim for the rest and stopped checking your email every hour.'],
-  16: ['You applied for a role at a company you actually admire, before telling anyone you were ready to move on.', 'Your flatmate left the dishes in the sink for the third time this week. Instead of another passive note, you planned one clear ask for Sunday’s flat meeting.', 'A package of yours was marked delivered, with a photo of it in the lobby, but it was gone when you went down. It’s the third time this month. You emailed the building office asking for the camera footage.']
+  1: ['In Monday’s check-in, your boss added another project to a plate that was already full. You said it was too much before deciding what to ask for.'],
+  2: ['The next day the deadline moved up again. He apologised, and you asked for the new date in writing.'],
+  3: ['You found out your boyfriend cheated. You wanted to send everything you were feeling right then, and waited a night instead.'],
+  5: ['He said sorry, then added that it wasn’t that serious. You called it what it was: a betrayal.'],
+  7: ['You spent the night telling yourself you should have seen it coming. You went to bed early instead of replaying it.'],
+  8: ['You blocked his number. Your phone stopped lighting up with his name.'],
+  9: ['Your teammate skipped the sync and left you the slides again. By the end of the day you’d done their half and yours.'],
+  10: ['You asked your teammate directly for their half, with a message that didn’t sound like an accusation.'],
+  11: ['You told your best friend everything, start to finish. It was the first time you’d said it out loud.'],
+  12: ['The deadline moved overnight, the third time this week. You vented, then drafted the message you wished you could send.'],
+  14: ['You stayed until 10pm to hit the new date, and noticed how much of it wasn’t yours to carry.'],
+  15: ['You slept through the night without checking his Instagram, the first time since you found out.'],
+  16: ['You asked your boss for a priority list instead of absorbing everything again.', 'Your roommate ran the dryer at 1am, loud enough to wake you. Instead of another passive note, you planned one calm ask for tomorrow morning.', 'A package of yours was marked delivered, with a photo of it in the lobby, but it was gone when you went down. It’s the third time this month. You emailed the building office asking for the camera footage.']
 };
-const OPEN = { work: { q: 'You never told them how that rejection landed.', m: 'OCT', dn: 12, wd: 'Mon', d: 'Oct 12', t: 'The two-line rejection', s: 'You wrote the reply, but never sent it.' }, self: { q: 'You called yourself useless that night and never took it back.', m: 'OCT', dn: 7, wd: 'Wed', d: 'Oct 7', t: 'A long day', s: 'You slept on it, but the words are still there.' }, friends: { q: 'You haven’t talked to Jess about the plans she keeps skipping.', m: 'OCT', dn: 10, wd: 'Sat', d: 'Oct 10', t: 'Jess', s: 'She hasn’t replied to your text yet.' }, pkg: { tk: 'home', q: 'Your package vanished from the lobby and the building hasn’t answered.', m: 'OCT', dn: 16, wd: 'Fri', d: 'Oct 16', t: 'The missing package', s: 'You emailed the office for the camera footage.' }, home: { q: 'You haven’t brought up the dishes with your flatmate yet.', m: 'OCT', dn: 16, wd: 'Fri', d: 'Oct 16', t: 'The dishes, again', s: 'Your ask is ready for Sunday’s flat meeting.' } };
+const OPEN = { work: { q: 'You never told your boss the deadlines keep moving.', m: 'OCT', dn: 12, wd: 'Mon', d: 'Oct 12', t: 'The moving deadline', s: 'You wrote the message, but never sent it.' }, self: { q: 'You told yourself you should have seen it coming and never took it back.', m: 'OCT', dn: 7, wd: 'Wed', d: 'Oct 7', t: 'A long night', s: 'You slept on it, but the words are still there.' }, friends: { q: 'You haven’t told your teammate you’re covering their part.', m: 'OCT', dn: 10, wd: 'Sat', d: 'Oct 10', t: 'The shared deck', s: 'They haven’t replied to your message yet.' }, pkg: { tk: 'home', q: 'Your package vanished from the lobby and the building hasn’t answered.', m: 'OCT', dn: 16, wd: 'Fri', d: 'Oct 16', t: 'The missing package', s: 'You emailed the office for the camera footage.' }, home: { q: 'You haven’t asked your roommate to stop running the dryer at 1am.', m: 'OCT', dn: 16, wd: 'Fri', d: 'Oct 16', t: 'The dryer, again', s: 'Your ask is ready for tomorrow morning.' } };
 const KINDS = [['learned', 'What you learned'], ['up', 'What came up'], ['coped', 'How you coped'], ['helped', 'How it helped']];
 const R = 192, AT = 172, AH = 470;
 const baseR = t => .19 + .12 * Math.sqrt(t.n / 5);
-const LINKS = [['work', 'money', 3], ['friends', 'self', 2], ['work', 'home', 1], ['home', 'friends', 1]];
+const LINKS = [['work', 'friends', 3], ['money', 'self', 2], ['work', 'home', 1], ['home', 'money', 1]];
 const linked = (a, b) => LINKS.some(l => (l[0] === a && l[1] === b) || (l[1] === a && l[0] === b));
 function targets(sel, t) {
   return THEMES.map((th, i) => {
@@ -789,7 +789,7 @@ function targets(sel, t) {
       x = -.72 + i * .36 + Math.sin(t * .17 * sp + ph) * .1; y = Math.sin(t * .2 * sp + ph) * .62;
       if (on) { x = Math.sin(t * .3) * .06; y = -.08 + Math.cos(t * .27) * .05; r *= 1.45; } else if (any) { r *= .85; cool = .55; }
     } else {
-      const P = { work: [-.47, -.1], money: [-.21, .32], friends: [.31, -.3], self: [.51, .04], home: [-.05, -.64] }[th.k];
+      const P = { work: [-.47, -.1], friends: [-.21, .32], money: [.31, -.3], self: [.51, .04], home: [-.05, -.64] }[th.k];
       x = P[0] + Math.sin(t * .22 + i * 1.7) * .05 + Math.sin(t * .13 + i) * .02; y = P[1] + Math.cos(t * .19 + i * 2.3) * .05; r *= on ? 1.25 : 1;
       if (any && !on && !linked(THEMES[sel].k, th.k)) cool = .85; else if (any && !on) r *= 1.05;
     }
