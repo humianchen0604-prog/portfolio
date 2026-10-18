@@ -700,6 +700,12 @@ p.disp{color:var(--t1)}
 @media (prefers-reduced-motion: reduce){.grp .gb{animation:none}}
 
 .fc{box-shadow:none!important}
+
+/* softer glow */
+.grp .gb{filter:blur(.3px) saturate(1.05);box-shadow:inset 0 0 6px rgba(255,255,255,.45),0 0 6px 0 color-mix(in srgb,var(--gc) 35%,transparent)!important}
+.grp .gb::after{opacity:.2!important;inset:-6px!important;filter:blur(5px)!important}
+
+.fc.grp{border-radius:14px!important}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
