@@ -606,6 +606,23 @@ p.disp{color:var(--t1)}
 
 /* Let it go as tinted glass: see-through topic colour, white rim and inner glow */
 .ob1b{background:linear-gradient(180deg,color-mix(in srgb,var(--oc) 62%,rgba(255,255,255,.25)) 0%,color-mix(in srgb,var(--oc) 70%,transparent) 100%)!important;-webkit-backdrop-filter:blur(14px) saturate(1.5)!important;backdrop-filter:blur(14px) saturate(1.5)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 0 .5px rgba(255,255,255,.4),inset 0 0 16px rgba(255,255,255,.32),0 8px 22px -10px color-mix(in srgb,var(--oc) 60%,transparent)!important;text-shadow:0 1px 6px rgba(0,0,0,.15)}
+
+/* open card: soft light-blur gradient fill, glass icon circle, no outer glow */
+.open2{height:230px!important;background:radial-gradient(75% 95% at 12% 0%,color-mix(in srgb,var(--oc) 40%,#fff) 0%,transparent 68%),radial-gradient(80% 90% at 100% 100%,color-mix(in srgb,var(--oc) 55%,#1a0a10) 0%,transparent 72%),linear-gradient(140deg,color-mix(in srgb,var(--oc) 78%,#fff) 0%,var(--oc) 55%,color-mix(in srgb,var(--oc) 70%,#2a0f14) 100%)!important;box-shadow:none!important}
+.open2 .aur,.open2 .pat,.open2 .pimg,.open2 .ofade,.open2 .oflow{display:none!important}
+.open2 .ograin{opacity:.3!important}
+.oic{position:absolute;left:16px;top:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.28);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);z-index:1}
+.oic::after{content:'';position:absolute;inset:0;background:#fff;-webkit-mask:var(--ico) center/22px 22px no-repeat;mask:var(--ico) center/22px 22px no-repeat}
+.k-work{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='11' rx='2'/%3E%3Cpath d='M2 19h20'/%3E%3C/svg%3E")}
+.k-home{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z'/%3E%3C/svg%3E")}
+.k-friends{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8' r='3'/%3E%3Cpath d='M3 19c0-3.3 2.7-5.5 6-5.5s6 2.200 6 5.500'/%3E%3Ccircle cx='17' cy='9' r='2.200'/%3E%3Cpath d='M17 14c2.200 0 4 1.600 4 4'/%3E%3C/svg%3E")}
+.k-money{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20s-7-4.400-7-10a4 4 0 0 1 7-2.500A4 4 0 0 1 19 10c0 5.600-7 10-7 10z'/%3E%3C/svg%3E")}
+.k-self{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='3.500'/%3E%3Cpath d='M5 20c0-4 3-6 7-6s7 2 7 6'/%3E%3C/svg%3E")}
+.open2 .ot2{margin:0 0 4px!important;font-size:19px!important;color:#fff!important}
+.open2 .owhen{margin:0 0 14px!important;padding:0 6px!important;font-size:13px!important;color:rgba(255,255,255,.78)!important}
+.open2 .otp{color:#fff!important}
+.open2 .ob2b{color:rgba(255,255,255,.92)!important;background:rgba(255,255,255,.16)!important}
+.calopen .open2,.dpage .open2{margin-left:0!important;margin-right:0!important}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
@@ -638,9 +655,9 @@ p.disp{color:var(--t1)}
     <sc-if value="{{showCalOpen}}" hint-placeholder-val="{{false}}"><div class="calopen"><sc-for list="{{calOpen}}" as="o" hint-placeholder-count="2"><section class="{{o.cls}}" style="--oc: {{o.c}}">
         <div class="aur" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div><div class="pat pat-{{o.k}}" aria-hidden="true"><i></i><i></i></div><div class="pimg" aria-hidden="true"></div>
         <svg class="ograin" aria-hidden="true" width="100%" height="100%"><filter id="og2"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"></feTurbulence></filter><rect width="100%" height="100%" filter="url(#og2)"></rect></svg>
-        <i class="ofade" aria-hidden="true"></i>
+        <i class="ofade" aria-hidden="true"></i><i class="oic" aria-hidden="true"></i>
         
-        <div class="obody"><p class="owhen"><span class="otp">{{o.topic}}</span><i class="odot"></i>{{o.ago}}</p><p class="ot2">{{o.q}}</p><div class="obtns"><button type="button" class="ob1b" onClick="{{o.go}}">Let it go</button><button type="button" class="ob2b">Chat to update</button></div></div>
+        <div class="obody"><p class="ot2">{{o.q}}</p><p class="owhen"><span class="otp">{{o.topic}}</span><i class="odot"></i>{{o.ago}}</p><div class="obtns"><button type="button" class="ob1b" onClick="{{o.go}}">Let it go</button><button type="button" class="ob2b">Chat to update</button></div></div>
       </section></sc-for></div></sc-if>
         <section class="fc fswap" style="display: {{fcD}}; opacity: {{fcO}}; transform: translateY({{fcY}}px); filter: blur({{fcB}}px); transition: {{fcT}}">
       <h3><span style="color: {{fTc}}; transition: color .3s">{{fTitle}}<span class="cnt">{{fCnt}}</span></span><span class="hm">{{fMeta}}</span></h3>
@@ -670,9 +687,9 @@ p.disp{color:var(--t1)}
       <sc-if value="{{dShowOpen}}" hint-placeholder-val="{{true}}"><section class="open2 k-{{dK}}" style="--oc: {{dC}}">
         <div class="aur" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div><div class="pat pat-{{dK}}" aria-hidden="true"><i></i><i></i></div><div class="pimg" aria-hidden="true"></div>
                 <svg class="ograin" aria-hidden="true" width="100%" height="100%"><filter id="og"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"></feTurbulence></filter><rect width="100%" height="100%" filter="url(#og)"></rect></svg>
-        <i class="ofade" aria-hidden="true"></i>
+        <i class="ofade" aria-hidden="true"></i><i class="oic" aria-hidden="true"></i>
                 
-        <div class="obody"><p class="owhen">{{dOago}}</p><p class="ot2">{{dOq}}</p><div class="obtns"><button type="button" class="ob1b" onClick="{{letGo}}">Let it go</button><button type="button" class="ob2b">Chat to update</button></div></div>
+        <div class="obody"><p class="ot2">{{dOq}}</p><p class="owhen">{{dOago}}</p><div class="obtns"><button type="button" class="ob1b" onClick="{{letGo}}">Let it go</button><button type="button" class="ob2b">Chat to update</button></div></div>
       </section></sc-if>
       <section class="dp"><h4><span>How it helped</span></h4>
         
