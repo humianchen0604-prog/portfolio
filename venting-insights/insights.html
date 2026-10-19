@@ -842,6 +842,10 @@ p.disp{color:var(--t1)}
 .dacts button:active{opacity:.8}
 
 .dpage{height:668px!important}
+
+/* sheet fits its content */
+.dpage{height:auto!important;max-height:calc(100% - 60px)!important;display:flex;flex-direction:column}
+.dpage .dscroll{position:relative!important;inset:auto!important;flex:1 1 auto;min-height:0;overflow-y:auto}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
