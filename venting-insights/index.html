@@ -810,6 +810,10 @@ p.disp{color:var(--t1)}
 .dp.dreflect{gap:12px}
 .dplus{order:-1;width:28px!important;height:28px!important;margin-left:-6px}
 .dplus svg{width:13px;height:13px}
+
+/* glare only on the top card */
+.dscroll .dp{background:rgba(255,255,255,.045)!important}
+.dscroll .dhead + .dp{background:radial-gradient(110% 85% at 0% 0%,color-mix(in srgb,var(--pc) 13%,rgba(255,255,255,.07)) 0%,transparent 66%),rgba(255,255,255,.045)!important}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
