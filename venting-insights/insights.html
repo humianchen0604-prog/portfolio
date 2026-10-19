@@ -754,6 +754,11 @@ p.disp{color:var(--t1)}
 .rrow:nth-of-type(2) .gb{border-radius:40% 60% 58% 42% / 60% 42% 58% 40%}
 .rrow:nth-of-type(3) .gb{border-radius:55% 45% 36% 64% / 42% 56% 44% 58%}
 .rrow:nth-of-type(4) .gb{border-radius:48% 52% 62% 38% / 56% 44% 56% 44%}
+
+.rhd h3{font-size:16px!important;line-height:20px!important;font-weight:500!important;letter-spacing:-.01em!important;color:rgba(236,232,242,.92)!important}
+.rhd{margin-bottom:12px!important}
+.rrow > svg:last-child{flex:none;width:7px;height:11px}
+.rtx b{order:-1}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
@@ -793,7 +798,7 @@ p.disp{color:var(--t1)}
         <div class="ocard"><div class="ohd"><i class="oblob" aria-hidden="true"></i><span>{{o.md}}</span></div><p class="ot3">{{o.q1}} <em>{{o.q2}}</em></p><div class="osug"><b>Next time</b><span>{{o.sug}}</span></div></div>
       </section></sc-for></div></sc-if>
         <sc-if value="{{showDayCards}}" hint-placeholder-val="{{false}}"><div class="dcs"><sc-for list="{{dayCards}}" as="e" hint-placeholder-count="1"><section class="dcard k-{{e.k}}" style="--oc: {{e.ac}}"><i class="dparcel" aria-hidden="true"></i><h4 class="dtl"><em>{{e.t1}}</em> {{e.t2}}</h4><p class="dsum">{{e.sum}}</p><div class="dact"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.200 6.300L20.500 12l-6.300 2.700L12 21l-2.200-6.300L3.500 12l6.300-2.700z" fill="#FFB74D" stroke="#FFB74D" stroke-width="1.500" stroke-linejoin="round"/></svg><span>{{e.act}}</span><svg width="10" height="16" viewBox="0 0 10 16" aria-hidden="true"><path d="M2 2l6 6-6 6" fill="none" stroke="rgba(236,232,242,.6)" stroke-width="1.600" stroke-linecap="round" stroke-linejoin="round"></path></svg></div></section></sc-for></div></sc-if>
-    <sc-if value="{{showGroups}}" hint-placeholder-val="{{false}}"><section class="rcnt grp"><div class="rhd"><h3>Heat groups</h3><p>How angry you were, in four groups</p></div><sc-for list="{{groups}}" as="g" hint-placeholder-count="4"><div class="rrow"><span class="gbw" aria-hidden="true"><i class="gb" style="width: {{g.sz}}px; height: {{g.sz}}px; --gc: {{g.c}}; background: radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0%, {{g.cl}} 30%, {{g.c}} 78%)"></i></span><span class="rtx"><small>{{g.sub}}</small><b>{{g.t}}</b></span><span class="rnum">{{g.avg}}</span></div></sc-for></section></sc-if>
+    <sc-if value="{{showGroups}}" hint-placeholder-val="{{false}}"><section class="rcnt grp"><div class="rhd"><h3>Heat groups</h3></div><sc-for list="{{groups}}" as="g" hint-placeholder-count="4"><div class="rrow"><span class="gbw" aria-hidden="true"><i class="gb" style="width: {{g.sz}}px; height: {{g.sz}}px; --gc: {{g.c}}; background: radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0%, {{g.cl}} 30%, {{g.c}} 78%)"></i></span><span class="rtx"><small>{{g.sub}}</small><b>{{g.t}}</b></span><svg width="10" height="16" viewBox="0 0 10 16" aria-hidden="true"><path d="M2 2l6 6-6 6" fill="none" stroke="rgba(236,232,242,.35)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div></sc-for></section></sc-if>
     <section class="fc fswap" style="display: {{fcD}}; opacity: {{fcO}}; transform: translateY({{fcY}}px); filter: blur({{fcB}}px); transition: {{fcT}}">
       <h3><span style="color: {{fTc}}; transition: color .3s">{{fTitle}}<span class="cnt">{{fCnt}}</span></span><span class="hm">{{fMeta}}</span></h3>
       <sc-if value="{{showSum}}" hint-placeholder-val="{{true}}"><p class="ult">You brought five things here. Most of them settled within a week. Work and love took the longest.</p></sc-if>
