@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Generate the call's voice clips with ElevenLabs text-to-speech (standard library only).
 
-    export ELEVENLABS_API_KEY=...        # never paste the key into chat or the page
+    export ELEVENLABS_API_KEY=...        # or skip this: the script prompts for the key, hidden
     python3 voice-clips/generate.py --dry-run   # list the clips, no key needed
     python3 voice-clips/generate.py             # create them in voice-clips/audio/
 
 Clips that already exist are skipped, so it is safe to re-run after a failure.
 Chunks mirror SCRIPT in the artifact's call.html; the *emphasis* markers are dropped from the audio.
 """
-import json, os, sys, time, urllib.error, urllib.request
+import getpass, json, os, sys, time, urllib.error, urllib.request
 
 USER_VOICE = "FCdKzv68Ofr4VUDcZXIy"
 AGENTS = {  # slug: (voice id, vent-page data-agent index)
@@ -56,9 +56,11 @@ def main():
             print(f"{name:24} {voice}  {text}")
         print(f"{len(todo)} clips")
         return
-    key = os.environ.get("ELEVENLABS_API_KEY")
+    key = (os.environ.get("ELEVENLABS_API_KEY") or "").strip()
+    if not key and sys.stdin.isatty():
+        key = getpass.getpass("ElevenLabs API key (typing is hidden, press Enter): ").strip()
     if not key:
-        sys.exit("Set ELEVENLABS_API_KEY first (export ELEVENLABS_API_KEY=...).")
+        sys.exit("No API key. Set ELEVENLABS_API_KEY or run this in a terminal to be prompted.")
     os.makedirs(OUT, exist_ok=True)
     for i, (name, voice, text) in enumerate(todo, 1):
         path = os.path.join(OUT, name)
