@@ -1130,7 +1130,7 @@ class Component extends DCLogic {
         const MWDN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], out = [];
         Object.keys(DAYS).map(Number).sort((x, y) => y - x).forEach(d => {
           const pk = Math.max.apply(null, HEAT[d] || [50]);
-          DAYS[d].forEach((e, ei) => { const dt = DAYTITLE[d]; out.push({ t: dt ? dt[0] + ' ' + dt[1] : e[1], sub: MWDN[(d + 2) % 7] + ' · Oct ' + d, bg: hrim(pk), core: hcore(pk), pick: () => this.setState({ day: d }) }); });
+          DAYS[d].forEach((e, ei) => { const dt = DAYTITLE[d]; out.push({ t: dt ? dt[0] + ' ' + dt[1] : e[1], sub: 'Oct ' + d, bg: hrim(pk), core: hcore(pk), pick: () => this.setState({ day: d }) }); });
         });
         return out;
       })(), calOpen: Object.keys(OPEN).filter(k => k !== 'pkg' && k !== 'home').sort((x, y) => OPEN[y].dn - OPEN[x].dn).map(k => { const n = 16 - OPEN[k].dn, tk = OPEN[k].tk || k; return { k: tk, cls: 'open2 k-' + tk + ((st.gone || {})[k] ? ' gone' : ''), c: rgb(hrgb(OPEN[k].h)), md: OPEN[k].d.replace('Oct ', '10.'), topic: TH[tk].name, q: OPEN[k].q, sug: OPEN[k].sug, q1: OPEN[k].q1, q2: OPEN[k].q2, date: OPEN[k].wd + ' ' + OPEN[k].d + ', 2026', ago: n <= 0 ? 'Today' : n === 1 ? 'Yesterday' : n + ' days ago', go: e => this.dissolve(k, e) }; }), fcD: isBlob ? 'block' : 'none', innerTop: isBlob ? 588 : st.day != null ? 524 : 488, toCal: () => this.swap('cal'), clearDay: () => this.setState({ day: null }),
