@@ -827,6 +827,16 @@ p.disp{color:var(--t1)}
 .dpage .grab{display:none!important}
 
 .dpage{height:600px!important}
+
+/* next-time actions */
+.dacts{display:flex;gap:8px;margin-top:16px}
+.dacts button{flex:1;height:40px;border:0;border-radius:12px;font-family:'Geist',sans-serif;font-size:13.5px;font-weight:500;cursor:pointer;transition:background .25s,color .25s,opacity .25s}
+.dacts .dact1{background:color-mix(in srgb,var(--pc) 70%,#fff);color:#0B0B0E}
+.dacts .dact1.on{background:color-mix(in srgb,var(--pc) 22%,transparent);color:color-mix(in srgb,var(--pc) 55%,#fff)}
+.dacts .dact2{background:rgba(255,255,255,.09);color:#fff}
+.dacts button:active{opacity:.8}
+
+.dpage{height:668px!important}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
@@ -889,10 +899,11 @@ p.disp{color:var(--t1)}
     <i class="grab" aria-hidden="true"></i>
     <button type="button" class="xbtn" aria-label="Close" onClick="{{closeD}}"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="rgba(236,232,242,.8)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"></path></svg></button>
     <div class="dscroll" style="--pc: {{dC}}">
-      <div class="dhead"><p class="dt" style="color: {{dTc}}"><i class="dblob" aria-hidden="true" style="--bc: {{dC}}; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.85), {{dC}} 68%)"></i>{{dName}}<svg class="tring" width="30" height="30" viewBox="0 0 40 40" aria-label="{{dStatus}}" onClick="{{unsettle}}" style="cursor: pointer"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-dasharray="3 3"></circle><circle cx="20" cy="20" r="16" fill="none" stroke="{{dC}}" stroke-width="3" stroke-linecap="round" transform="rotate(-90 20 20)" style="stroke-dasharray: {{dDash}} 101; transition: stroke-dasharray 1.1s cubic-bezier(.2,.8,.2,1)"></circle></svg><span class="setl" style="opacity: {{dSetO}}">Settled</span></p></div>
+      <div class="dhead"><p class="dt" style="color: {{dTc}}"><i class="dblob" aria-hidden="true" style="--bc: {{dC}}; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.85), {{dC}} 68%)"></i>{{dName}}</p></div>
             <section class="dp"><h4><span>Summary</span></h4><p class="lead">{{dSum}}</p></section>
                         <section class="dp"><h4><span>Next time</span></h4>
         <div class="dins"><sc-for list="{{dFix}}" as="r" hint-placeholder-count="3"><p class="di"><i class="mk" style="--mc: {{r.c}}"></i><span>{{r.t}}</span></p></sc-for></div>
+        <div class="dacts"><button type="button" class="dact1 {{todoCls}}" onClick="{{setTodo}}">{{todoLbl}}</button><button type="button" class="dact2" onClick="{{copyFix}}">{{copyLbl}}</button></div>
       </section>
       <section class="dp dreflect"><div><h4><span>Add more</span></h4><p class="lead">Add related topics to go deeper on this event and how you felt</p></div><button type="button" class="dplus" aria-label="Add more"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2.500v13M2.500 9h13" stroke="#fff" stroke-width="1.700" stroke-linecap="round" fill="none"/></svg></button></section>
     </div>
@@ -1142,7 +1153,8 @@ class Component extends DCLogic {
           dUp: DTd.up.map(x => { const p = x.split(' · '); return { t: p[1], d: p[0] }; }),
           dCopes: COPES[dt.k].map(c => ({ t: c[0], n: '×' + c[1], d: c[1] + (c[1] === 1 ? ' time' : ' times') })), dTalks: dt.n, dSettled: done[dt.k], dReflect: dt.reflect, dSpan: (() => { const ds = INS[dt.k].map(x => x[1]).concat(DTd.up.map(x => +x.split(' · ')[0].replace('Oct ', ''))); return Math.max(1, Math.max(...ds) - Math.min(...ds)); })(), dCopedNote: DTd.coped,
           dQuote: QUOTE[dt.k], dQd: DTd.up[DTd.up.length - 1].split(' · ')[0], dHelped: DTd.helped,
-          dIns: INS[dt.k].slice(0, 2).map(x => ({ t: x[0], c: rgb(dt.c) })), dC: rgb(dt.c), dTc: rgb(mix(dt.c, WHITE, .15)), dUpText: UPS[dt.k], dSum: SUMMARY[dt.k], dWhen: WHEN[dt.k].map(x => ({ l: x[0], t: x[1] })), dFix: FIX[dt.k].map(t => ({ t: t, c: rgb(dt.c) })),
+          dIns: INS[dt.k].slice(0, 2).map(x => ({ t: x[0], c: rgb(dt.c) })), dC: rgb(dt.c), dTc: rgb(mix(dt.c, WHITE, .15)), dUpText: UPS[dt.k], dSum: SUMMARY[dt.k], dWhen: WHEN[dt.k].map(x => ({ l: x[0], t: x[1] })), dFix: FIX[dt.k].map(t => ({ t: t, c: rgb(dt.c) })), todoCls: (st.todo || {})[dt.k] ? 'on' : '', todoLbl: (st.todo || {})[dt.k] ? '✓ Added to to-do' : 'Set as to-do', setTodo: () => { const t = Object.assign({}, st.todo); t[dt.k] = !t[dt.k]; this.setState({ todo: t }); },
+          copyLbl: st.copied === dt.k ? 'Copied' : 'Copy text', copyFix: () => { const txt = 'Next time (' + dt.name + ')\n' + FIX[dt.k].map((x, i) => (i + 1) + '. ' + x).join('\n'); try { navigator.clipboard.writeText(txt); } catch (e) {} this.setState({ copied: dt.k }); clearTimeout(this.cpT); this.cpT = setTimeout(() => this.setState({ copied: null }), 1600); },
           dDash: (done[dt.k] / dt.n * 100.5).toFixed(1), dPie: (() => { const f = done[dt.k] / dt.n, r = 7.5; if (f <= 0) return ''; if (f >= 1) return 'M11 3.5 A7.5 7.5 0 1 1 10.99 3.5 Z'; const a = -Math.PI / 2 + f * 2 * Math.PI; return 'M11 11 L11 3.5 A7.5 7.5 0 ' + (f > .5 ? 1 : 0) + ' 1 ' + (11 + r * Math.cos(a)).toFixed(2) + ' ' + (11 + r * Math.sin(a)).toFixed(2) + ' Z'; })(), dDots: Array.from({ length: dt.n }, (_, j) => ({ c: j < done[dt.k] ? rgb(dt.c) : 'rgba(255,255,255,.16)' })),
           dK: dt.k, dSetO: done[dt.k] === dt.n ? 1 : 0, unsettle: () => { const g = Object.assign({}, st.gone); delete g[dt.k]; this.setState({ gone: g }); }, dHasOpen: !!OPEN[dt.k], dShowOpen: !!OPEN[dt.k] && !(st.gone || {})[dt.k], letGo: e => this.dissolve(dt.k, e), dOd: (OPEN[dt.k] || {}).d, dOq: (OPEN[dt.k] || {}).q, dAc: OPEN[dt.k] ? rgb(hrgb(OPEN[dt.k].h)) : 'rgb(255,255,255)', dOmd: ((OPEN[dt.k] || {}).d || '').replace('Oct ', '10.'), dOq1: (OPEN[dt.k] || {}).q1, dOq2: (OPEN[dt.k] || {}).q2, dOsug: (OPEN[dt.k] || {}).sug, dOago: (() => { const o = OPEN[dt.k]; if (!o) return ''; const n = 16 - o.dn; return n <= 0 ? 'Today' : n === 1 ? 'Yesterday' : n + ' days ago'; })(), dOm: (OPEN[dt.k] || {}).m, dOdn: (OPEN[dt.k] || {}).dn, dOwd: (OPEN[dt.k] || {}).wd, dOt: (OPEN[dt.k] || {}).t, dOs: (OPEN[dt.k] || {}).s,
           ...(() => { const se = SERIES[dt.k], n = se.length, W = 338, H = 64, X = j => 6 + j / Math.max(1, n - 1) * (W - 12), Y = h => 6 + (1 - (h - 15) / 80) * (H - 12); const pts = se.map((h, j) => [X(j), Y(h)]); const L = pts.map((q, j) => (j ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' '); return { dHasSp: n > 1, dSpL: L, dSpA: L + ' L' + pts[n - 1][0].toFixed(1) + ' ' + H + ' L' + pts[0][0].toFixed(1) + ' ' + H + ' Z', dSx: pts[n - 1][0].toFixed(1), dSy: pts[n - 1][1].toFixed(1) }; })()
