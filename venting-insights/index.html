@@ -763,6 +763,24 @@ p.disp{color:var(--t1)}
 .rrow{cursor:pointer}
 
 .rtx b{overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+/* topic panel as a stack of soft cards (reference), accent label + white text */
+.dpage{inset:auto 6px 6px 6px!important;height:800px!important;max-height:calc(100% - 60px)}
+.dscroll{padding:30px 10px 28px!important}
+.dhead{padding:0 14px 18px!important}
+.dscroll .dp{--pc:inherit;margin:0 0 12px!important;padding:22px 24px 24px!important;border-radius:28px!important;border-top:0!important;
+  background:radial-gradient(110% 85% at 0% 0%,color-mix(in srgb,var(--pc) 13%,rgba(255,255,255,.07)) 0%,transparent 66%),rgba(255,255,255,.045)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important}
+.dscroll .dp + .dp{margin-top:0!important}
+.dscroll .dp h4{margin:0 0 6px!important;display:block;font-size:17px;font-weight:400;letter-spacing:0;color:color-mix(in srgb,var(--pc) 55%,#fff)!important}
+.dscroll .dp .lead,.dscroll .dp .lead.up{margin:0;font-size:17px!important;line-height:1.28;font-weight:400;color:#fff!important}
+.dscroll .dw{border-top:1px solid rgba(255,255,255,.08)}
+.dscroll .dp h4 + .dw{border-top:0}
+.dscroll .di{font-size:16px;color:#fff}
+.dp.dreflect{display:flex;align-items:center;gap:16px}
+.dp.dreflect > div{flex:1;min-width:0}
+.dp.dreflect .lead{font-size:16px!important}
+.dplus{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(255,255,255,.75);background:transparent;display:grid;place-items:center;cursor:pointer;padding:0}
+.dplus:active{transform:scale(.95)}
 </style>
 <link rel="stylesheet" href="flow.css?v=3">
 <link rel="stylesheet" href="vt.css?v=3">
@@ -824,10 +842,11 @@ p.disp{color:var(--t1)}
   <section class="dpage" role="dialog" aria-label="{{dName}}" aria-hidden="{{dHidden}}" style="transform: {{dTf}}">
     <i class="grab" aria-hidden="true"></i>
     <button type="button" class="xbtn" aria-label="Close" onClick="{{closeD}}"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="rgba(236,232,242,.8)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"></path></svg></button>
-    <div class="dscroll">
+    <div class="dscroll" style="--pc: {{dC}}">
       <div class="dhead"><p class="dt" style="color: {{dTc}}">{{dName}}<span class="cnt"> ({{dTalks}})</span><svg class="tring" width="30" height="30" viewBox="0 0 40 40" aria-label="{{dStatus}}" onClick="{{unsettle}}" style="cursor: pointer"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-dasharray="3 3"></circle><circle cx="20" cy="20" r="16" fill="none" stroke="{{dC}}" stroke-width="3" stroke-linecap="round" transform="rotate(-90 20 20)" style="stroke-dasharray: {{dDash}} 101; transition: stroke-dasharray 1.1s cubic-bezier(.2,.8,.2,1)"></circle></svg><span class="setl" style="opacity: {{dSetO}}">Settled</span></p></div>
             <section class="dp"><h4><span>Summary</span></h4><p class="lead">{{dSum}}</p></section>
       <sc-if value="{{dShowOpen}}" hint-placeholder-val="{{true}}"><section class="dp"><h4><span>Next time</span></h4><p class="lead">{{dOsug}}</p></section></sc-if>
+      <section class="dp dreflect"><div><h4><span>Add more</span></h4><p class="lead">Add related topics to go deeper on this event and how you felt</p></div><button type="button" class="dplus" aria-label="Add more"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2.500v13M2.500 9h13" stroke="#fff" stroke-width="1.700" stroke-linecap="round" fill="none"/></svg></button></section>
       <section class="dp" style="--pc: {{dC}}"><h4><span>When it happens</span></h4>
         <sc-for list="{{dWhen}}" as="r" hint-placeholder-count="3"><p class="dw"><b>{{r.l}}</b><span>{{r.t}}</span></p></sc-for>
       </section>
