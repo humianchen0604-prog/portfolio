@@ -1,0 +1,50 @@
+diff --git a/recovered/src/src/components/casestudy/TikTokBody.tsx b/recovered/src/src/components/casestudy/TikTokBody.tsx
+index 872d173..77df7fe 100644
+--- a/recovered/src/src/components/casestudy/TikTokBody.tsx
++++ b/recovered/src/src/components/casestudy/TikTokBody.tsx
+@@ -216,6 +216,22 @@ export default function TikTokBody() {
+                 </div>
+               </div>
+ 
++              {/* ------------------------------------------------------------ CTA */}
++              <div className="framer-n9na3f" data-framer-name="CTA">
++                <div className="framer-1glwd7l">
++                  <div className="framer-1warq6h">
++                    <div className="framer-eahql">
++                      <Eyebrow>{'Want the full story?'}</Eyebrow>
++                      <Title>{'Reach out via email or LinkedIn for walkthrough'}</Title>
++                      <ReachOutBanner
++                        variant="quote"
++                        lead="Enter password to unlock more"
++                      />
++                    </div>
++                  </div>
++                </div>
++              </div>
++
+               {/* ------------------------------------------------------ Projects */}
+               <div className="framer-evphwi" data-framer-name="Projects" id="projects">
+                 <div className="framer-1muivw2">
+@@ -550,22 +566,6 @@ export default function TikTokBody() {
+                 </div>
+               </div>
+ 
+-              {/* ------------------------------------------------------------ CTA */}
+-              <div className="framer-n9na3f" data-framer-name="CTA">
+-                <div className="framer-1glwd7l">
+-                  <div className="framer-1warq6h">
+-                    <div className="framer-eahql">
+-                      <Eyebrow>{'Want the full story?'}</Eyebrow>
+-                      <Title>{'Reach out via email or LinkedIn for walkthrough'}</Title>
+-                      <ReachOutBanner
+-                        variant="quote"
+-                        lead="Enter password to unlock more"
+-                      />
+-                    </div>
+-                  </div>
+-                </div>
+-              </div>
+-
+               {/* -------------------------------------------------- Intern days */}
+               <div className="framer-n9na3f" data-framer-name="Intern days" id="interndays">
+                 <div className="framer-1glwd7l">
